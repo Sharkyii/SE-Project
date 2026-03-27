@@ -11,6 +11,7 @@ import FeeManagement from './pages/student/FeeManagement';
 import Electives from './pages/student/Electives';
 import FeeVerification from './pages/admin/FeeVerification';
 import UserManagement from './pages/admin/UserManagement';
+import CourseAllocation from './pages/admin/CourseAllocation';
 
 // Mock components for routes that might not exist yet
 const Placeholder = ({ title }: { title: string }) => (
@@ -51,6 +52,7 @@ function App() {
             {/* Admin Routes */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="admin/courses" element={<CourseCreation />} />
+              <Route path="admin/course-allocation" element={<CourseAllocation />} />
               <Route path="admin/faculty" element={<UserManagement />} />
               <Route path="admin/timetable" element={<TimetableManager />} />
               <Route path="admin/fee-verification" element={<FeeVerification />} />

@@ -95,6 +95,64 @@ export const createCourse = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
+// Get all courses (with faculty info)
+export const getCourses = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data: courses, error: coursesError } = await supabase
+            .from('courses')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (coursesError) throw coursesError;
+
+        const { data: facultyData, error: facultyError } = await supabase
+            .from('faculty')
+            .select('name, email_id, department, designation');
+
+        if (facultyError) throw facultyError;
+
+        // Build a lookup map for faculty by email_id
+        const facultyMap = new Map<string, any>();
+        if (facultyData) {
+            for (const f of facultyData) {
+                facultyMap.set(f.email_id, f);
+            }
+        }
+
+        // Merge faculty info into each course
+        const result = (courses || []).map(course => ({
+            ...course,
+            faculty: course.email_id ? (facultyMap.get(course.email_id) || null) : null,
+        }));
+
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Unassign Faculty from Course
+export const unassignFaculty = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { courseId } = req.params;
+        const { data, error } = await supabase
+            .from('courses')
+            .update({ email_id: null })
+            .eq('id', courseId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        if (!data) {
+            res.status(404);
+            throw new Error('Course not found');
+        }
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Assign Faculty to Course
 export const assignFaculty = async (req: Request, res: Response, next: NextFunction) => {
     try {
