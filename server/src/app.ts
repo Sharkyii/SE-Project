@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
 import facultyRoutes from './routes/faculty.routes';
 import studentRoutes from './routes/student.routes';
+import feeRoutes from './routes/fee.routes';
 
 const app: Application = express();
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/fees', feeRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

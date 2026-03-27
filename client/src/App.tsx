@@ -7,6 +7,8 @@ import CourseCreation from './pages/admin/CourseCreation';
 import TimetableManager from './pages/admin/TimetableManager';
 import FacultyTimetable from './pages/faculty/FacultyTimetable';
 import StudentTimetable from './pages/student/StudentTimetable';
+import FeeManagement from './pages/student/FeeManagement';
+import FeeVerification from './pages/admin/FeeVerification';
 
 // Mock components for routes that might not exist yet
 const Placeholder = ({ title }: { title: string }) => (
@@ -49,6 +51,7 @@ function App() {
               <Route path="admin/courses" element={<CourseCreation />} />
               <Route path="admin/faculty" element={<Placeholder title="Faculty Assignment" />} />
               <Route path="admin/timetable" element={<TimetableManager />} />
+              <Route path="admin/fee-verification" element={<FeeVerification />} />
             </Route>
 
             {/* Faculty Routes */}
@@ -63,6 +66,7 @@ function App() {
               <Route path="student/enrollment" element={<Placeholder title="Course Enrollment" />} />
               <Route path="student/grades" element={<Placeholder title="My Grades" />} />
               <Route path="student/timetable" element={<StudentTimetable />} />
+              <Route path="student/fees" element={<FeeManagement />} />
             </Route>
           </Route>
         </Route>
