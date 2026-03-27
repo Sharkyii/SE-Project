@@ -12,6 +12,7 @@ import adminRoutes from './routes/admin.routes';
 import facultyRoutes from './routes/faculty.routes';
 import studentRoutes from './routes/student.routes';
 import feeRoutes from './routes/fee.routes';
+import enrollmentRoutes from './routes/enrollment.routes';
 
 const app: Application = express();
 
@@ -32,6 +33,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/fees', feeRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

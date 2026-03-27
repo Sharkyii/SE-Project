@@ -163,3 +163,34 @@ CREATE TABLE IF NOT EXISTS elective_enrollments (
     UNIQUE (student_id, semester, academic_year),
     FOREIGN KEY (course_id) REFERENCES courses(code) ON DELETE CASCADE
 );
+
+-- 12. Enrollment Applications Table
+CREATE TABLE IF NOT EXISTS enrollment_applications (
+    id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    full_name      TEXT NOT NULL,
+    email          TEXT NOT NULL,
+    phone          TEXT NOT NULL,
+    date_of_birth  DATE,
+    gender         TEXT CHECK (gender IN ('male', 'female', 'other')),
+    department     TEXT NOT NULL,
+    semester       INTEGER NOT NULL,
+    section        TEXT DEFAULT 'A',
+    address        TEXT,
+    guardian_name  TEXT,
+    guardian_phone TEXT,
+    status         TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    remarks        TEXT,
+    reviewed_at    TIMESTAMPTZ,
+    created_at     TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. Student Documents Table
+CREATE TABLE IF NOT EXISTS student_documents (
+    id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    application_id BIGINT NOT NULL,
+    doc_type       TEXT NOT NULL CHECK (doc_type IN ('aadhar_card', 'college_id', 'photo', 'other')),
+    file_url       TEXT NOT NULL,
+    original_name  TEXT NOT NULL,
+    uploaded_at    TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (application_id) REFERENCES enrollment_applications(id) ON DELETE CASCADE
+);
