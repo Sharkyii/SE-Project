@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { supabase } from '../config/db';
 
-const generateToken = (id: number, role: string) => {
-    return jwt.sign({ id, role }, env.JWT_SECRET, {
+const generateToken = (id: number, role: string, email: string) => {
+    return jwt.sign({ id, role, email }, env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
@@ -69,7 +69,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         const { data: user, error } = await supabase.from('users').select('*').eq('email', email).single();
 
         if (user && (await bcrypt.compare(password, user.password))) {
-            const token = generateToken(user.id, user.role);
+            const token = generateToken(user.id, user.role, user.email);
             res.cookie('jwt', token, {
                 httpOnly: true,
                 secure: env.NODE_ENV !== 'development',

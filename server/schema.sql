@@ -107,6 +107,19 @@ CREATE TABLE IF NOT EXISTS leaderboard (
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
 );
 
+-- 11. Fee Receipts Table
+CREATE TABLE IF NOT EXISTS fee_receipts (
+    id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    student_id     TEXT NOT NULL,
+    fee_type       TEXT NOT NULL CHECK (fee_type IN ('mess', 'academic')),
+    bank           TEXT NOT NULL,
+    payment_method TEXT NOT NULL CHECK (payment_method IN ('UPI', 'Net Banking', 'Debit Card', 'Credit Card')),
+    file_url       TEXT NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    uploaded_at    TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
 -- 10. Timetables Table
 CREATE TABLE IF NOT EXISTS timetables (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

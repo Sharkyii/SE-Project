@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useStore } from '../../app/store';
-import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Sidebar: React.FC = () => {
@@ -11,8 +11,8 @@ export const Sidebar: React.FC = () => {
         { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
         { name: 'Course Management', path: '/admin/courses', icon: BookOpen },
         { name: 'Master Timetable', path: '/admin/timetable', icon: Calendar },
-        { name: 'Faculty Allocation', path: '/admin/faculty', icon: Users },
-        { name: 'Enrollment', path: '/admin/enrollment', icon: FileText },
+        { name: 'User Management', path: '/admin/users', icon: Users },
+        { name: 'Fee Verification', path: '/admin/fee-verification', icon: BadgeCheck },
         { name: 'Reports', path: '/admin/reports', icon: ClipboardList },
     ];
 
