@@ -147,3 +147,19 @@ BEGIN
     ALTER TABLE courses ALTER COLUMN email_id DROP NOT NULL;
 END $$;
 
+
+-- Add elective fields to courses
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS is_elective BOOLEAN DEFAULT FALSE;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS max_seats INTEGER DEFAULT 30;
+
+-- Elective Enrollments Table (one elective per student per semester)
+CREATE TABLE IF NOT EXISTS elective_enrollments (
+    id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    student_id     TEXT NOT NULL,
+    course_id      TEXT NOT NULL,
+    semester       INTEGER NOT NULL,
+    academic_year  INTEGER NOT NULL,
+    enrolled_at    TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (student_id, semester, academic_year),
+    FOREIGN KEY (course_id) REFERENCES courses(code) ON DELETE CASCADE
+);
