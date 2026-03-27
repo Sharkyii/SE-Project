@@ -1,5 +1,5 @@
 # 🎓 Academic ERP System (PostgreSQL Edition)
-
+hi
 [![Tech Stack](https://img.shields.io/badge/Stack-React_|_Node_|_PostgreSQL-blue.svg)](# project-architecture)
 [![Team](https://img.shields.io/badge/Team-SE_Project_BMS-green.svg)](#-team-assignments--roadmap)
 
