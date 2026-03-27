@@ -8,8 +8,6 @@ export const uploadFeeReceipt = async (payload: FeeUploadPayload): Promise<FeeUp
   formData.append('bank', payload.bank);
   formData.append('payment_method', payload.paymentMethod);
 
-  const { data } = await api.post<FeeUploadResponse>('/student/fees/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const { data } = await api.post<FeeUploadResponse>('/fees/upload', formData);
   return data;
 };

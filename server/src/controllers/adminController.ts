@@ -1,5 +1,82 @@
 import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcryptjs';
 import { supabase } from '../config/db';
+
+// Create Student (admin only)
+export const createStudent = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { name, email, password, student_id, department, semester, section } = req.body;
+        if (!name || !email || !password || !student_id || !department || !semester) {
+            res.status(400); throw new Error('All fields are required');
+        }
+
+        const { data: exists } = await supabase.from('users').select('id').eq('email', email).single();
+        if (exists) { res.status(400); throw new Error('Email already registered'); }
+
+        const hashed = await bcrypt.hash(password, 10);
+
+        const { data: userRes, error: userErr } = await supabase
+            .from('users').insert([{ email, password: hashed, role: 'student' }]).select().single();
+        if (userErr) throw userErr;
+
+        const { data: studentRes, error: studentErr } = await supabase
+            .from('students')
+            .insert([{ student_id, name, email_id: email, department, semester: Number(semester), section: section || 'A' }])
+            .select().single();
+        if (studentErr) throw studentErr;
+
+        await supabase.from('users').update({ profile_id: student_id }).eq('id', userRes.id);
+
+        res.status(201).json({ message: 'Student created', student: studentRes });
+    } catch (error) { next(error); }
+};
+
+// Create Faculty (admin only)
+export const createFaculty = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { name, email, password, department, designation } = req.body;
+        if (!name || !email || !password || !department || !designation) {
+            res.status(400); throw new Error('All fields are required');
+        }
+
+        const { data: exists } = await supabase.from('users').select('id').eq('email', email).single();
+        if (exists) { res.status(400); throw new Error('Email already registered'); }
+
+        const hashed = await bcrypt.hash(password, 10);
+
+        const { data: userRes, error: userErr } = await supabase
+            .from('users').insert([{ email, password: hashed, role: 'faculty' }]).select().single();
+        if (userErr) throw userErr;
+
+        const { data: facultyRes, error: facultyErr } = await supabase
+            .from('faculty')
+            .insert([{ user_id: String(userRes.id), email_id: email, name, department, designation }])
+            .select().single();
+        if (facultyErr) throw facultyErr;
+
+        await supabase.from('users').update({ profile_id: email }).eq('id', userRes.id);
+
+        res.status(201).json({ message: 'Faculty created', faculty: facultyRes });
+    } catch (error) { next(error); }
+};
+
+// Get all students
+export const getStudents = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data, error } = await supabase.from('students').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) { next(error); }
+};
+
+// Get all faculty
+export const getFaculty = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data, error } = await supabase.from('faculty').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) { next(error); }
+};
 
 // Create Course
 export const createCourse = async (req: Request, res: Response, next: NextFunction) => {
