@@ -8,6 +8,7 @@ import TimetableManager from './pages/admin/TimetableManager';
 import FacultyTimetable from './pages/faculty/FacultyTimetable';
 import StudentTimetable from './pages/student/StudentTimetable';
 import FeeManagement from './pages/student/FeeManagement';
+import Electives from './pages/student/Electives';
 import FeeVerification from './pages/admin/FeeVerification';
 import UserManagement from './pages/admin/UserManagement';
 
@@ -66,6 +67,7 @@ function App() {
             {/* Student Routes */}
             <Route element={<ProtectedRoute allowedRoles={['student', 'admin']} />}>
               <Route path="student/enrollment" element={<Placeholder title="Course Enrollment" />} />
+              <Route path="student/electives" element={<Electives />} />
               <Route path="student/grades" element={<Placeholder title="My Grades" />} />
               <Route path="student/timetable" element={<StudentTimetable />} />
               <Route path="student/fees" element={<FeeManagement />} />

@@ -81,10 +81,10 @@ export const getFaculty = async (req: Request, res: Response, next: NextFunction
 // Create Course
 export const createCourse = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { name, code, description, credits, email_id } = req.body;
+        const { name, code, description, credits, email_id, is_elective, max_seats, elective_semester } = req.body;
         const { data, error } = await supabase
             .from('courses')
-            .insert([{ name, code, description, credits, email_id: email_id || null }])
+            .insert([{ name, code, description, credits, email_id: email_id || null, is_elective: is_elective || false, max_seats: max_seats || 30, elective_semester: elective_semester || null }])
             .select()
             .single();
 
@@ -213,4 +213,19 @@ export const getReports = async (req: Request, res: Response, next: NextFunction
     } catch (error) {
         next(error);
     }
+};
+
+// Get elective enrollment summary
+export const getElectiveSummary = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { semester, academicYear } = req.query;
+        const { data, error } = await supabase
+            .from('elective_enrollments')
+            .select('*, courses(name, code, max_seats), students(name, student_id, department)')
+            .eq('semester', semester)
+            .eq('academic_year', academicYear)
+            .order('course_id');
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) { next(error); }
 };
