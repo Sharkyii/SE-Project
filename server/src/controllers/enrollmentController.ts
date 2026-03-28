@@ -96,6 +96,8 @@ export const submitApplication = async (req: MulterRequest, res: Response, next:
 export const getMyApplication = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const email = req.user?.email;
+
+    // First check enrollment_applications by email
     const { data, error } = await supabase
       .from('enrollment_applications')
       .select('*, student_documents(*)')
@@ -103,8 +105,36 @@ export const getMyApplication = async (req: Request, res: Response, next: NextFu
       .maybeSingle();
 
     if (error) { res.status(500); throw new Error(error.message); }
-    if (!data) { res.status(404); throw new Error('No application found'); }
-    res.json(data);
+
+    if (data) {
+      return res.json(data);
+    }
+
+    // If no application found by email, check if student is already in students table
+    // (could have been created by admin directly)
+    const { data: student } = await supabase
+      .from('students')
+      .select('student_id, name, email_id, department, semester, section, created_at')
+      .eq('email_id', email)
+      .maybeSingle();
+
+    if (student) {
+      // Return a synthetic approved application so the UI shows "Registration Complete"
+      return res.json({
+        id: 0,
+        full_name: student.name,
+        email: student.email_id,
+        phone: '',
+        department: student.department,
+        semester: student.semester,
+        section: student.section || 'A',
+        status: 'approved',
+        created_at: student.created_at,
+        student_documents: [],
+      });
+    }
+
+    res.status(404); throw new Error('No application found');
   } catch (error) { next(error); }
 };
 

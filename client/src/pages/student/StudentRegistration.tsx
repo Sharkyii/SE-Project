@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Upload, CheckCircle, XCircle, Clock,
-  Loader2, AlertCircle, FileText, Trash2, ExternalLink,
+  Loader2, AlertCircle, FileText, Trash2, ExternalLink, RefreshCw,
 } from 'lucide-react';
 import api from '../../services/api';
 import clsx from 'clsx';
 import type { EnrollmentApplication } from '../../types/enrollment';
 import { DEPARTMENTS, DOC_LABELS } from '../../types/enrollment';
+import { useStore } from '../../app/store';
 
 type DocField = 'aadhar_card' | 'college_id' | 'photo' | 'other';
 
@@ -18,7 +19,7 @@ const DOC_FIELDS: { field: DocField; label: string; required: boolean; hint: str
 ];
 
 // ── Status View ───────────────────────────────────────────────────────────────
-const ApplicationStatusView: React.FC<{ app: EnrollmentApplication }> = ({ app }) => (
+const ApplicationStatusView: React.FC<{ app: EnrollmentApplication; onRefresh?: () => void }> = ({ app, onRefresh }) => (
   <div className="max-w-2xl mx-auto space-y-5">
     <div className={clsx('rounded-2xl border p-6 text-center', {
       'border-yellow-500/30 bg-yellow-500/5': app.status === 'pending',
@@ -34,12 +35,12 @@ const ApplicationStatusView: React.FC<{ app: EnrollmentApplication }> = ({ app }
         'text-red-400': app.status === 'rejected',
       })}>
         {app.status === 'pending' && 'Application Under Review'}
-        {app.status === 'approved' && 'Application Approved'}
+        {app.status === 'approved' && 'Registration Complete'}
         {app.status === 'rejected' && 'Application Rejected'}
       </h2>
       <p className="text-gray-400 text-sm mt-2">
         {app.status === 'pending' && 'Your application is being reviewed. Please check back later.'}
-        {app.status === 'approved' && 'Congratulations! Your enrollment has been approved.'}
+        {app.status === 'approved' && 'Congratulations! Your enrollment has been approved. You are now a registered student.'}
         {app.status === 'rejected' && 'Your application was not approved. Contact admin for details.'}
       </p>
       {app.remarks && (
@@ -47,6 +48,13 @@ const ApplicationStatusView: React.FC<{ app: EnrollmentApplication }> = ({ app }
           <p className="text-gray-400 text-xs mb-1">Admin Remarks</p>
           <p className="text-white text-sm">{app.remarks}</p>
         </div>
+      )}
+      {app.status === 'pending' && onRefresh && (
+        <button onClick={onRefresh}
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg text-sm transition-colors">
+          <RefreshCw className="w-4 h-4" />
+          Check Status
+        </button>
       )}
     </div>
 
@@ -150,6 +158,7 @@ const Field: React.FC<{
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function StudentRegistration() {
+  const { user } = useStore();
   const [existingApp, setExistingApp] = useState<EnrollmentApplication | null>(null);
   const [checkingApp, setCheckingApp] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -157,7 +166,7 @@ export default function StudentRegistration() {
   const [docs, setDocs] = useState<Partial<Record<DocField, File>>>({});
 
   const [form, setForm] = useState({
-    full_name: '', email: '', phone: '', date_of_birth: '',
+    full_name: '', email: user?.email || '', phone: '', date_of_birth: '',
     gender: '', department: '', semester: '', section: 'A',
     address: '', guardian_name: '', guardian_phone: '',
   });
@@ -168,6 +177,17 @@ export default function StudentRegistration() {
       .catch(() => { /* no existing app — show form */ })
       .finally(() => setCheckingApp(false));
   }, []);
+
+  // Poll every 10s while pending so status updates automatically
+  useEffect(() => {
+    if (!existingApp || existingApp.status !== 'pending') return;
+    const interval = setInterval(() => {
+      api.get('/enrollments/my')
+        .then(r => setExistingApp(r.data))
+        .catch(() => {});
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [existingApp?.status]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -185,7 +205,9 @@ export default function StudentRegistration() {
     setSubmitting(true);
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v); });
+      // Always use the logged-in user's email
+      const submitForm = { ...form, email: user?.email || form.email };
+      Object.entries(submitForm).forEach(([k, v]) => { if (v) fd.append(k, v); });
       Object.entries(docs).forEach(([field, file]) => { if (file) fd.append(field, file as File); });
       const { data } = await api.post('/enrollments/apply', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -207,13 +229,28 @@ export default function StudentRegistration() {
   }
 
   if (existingApp) {
+    const refresh = () => {
+      api.get('/enrollments/my')
+        .then(r => setExistingApp(r.data))
+        .catch(() => {});
+    };
     return (
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">My Registration</h1>
-          <p className="text-gray-400 text-sm mt-1">Track your enrollment application status</p>
+          <h1 className={clsx('text-2xl font-bold', {
+            'text-yellow-400': existingApp.status === 'pending',
+            'text-green-400': existingApp.status === 'approved',
+            'text-red-400': existingApp.status === 'rejected',
+          })}>
+            {existingApp.status === 'approved' ? 'Registration Complete' : 'My Registration'}
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            {existingApp.status === 'approved'
+              ? 'Your enrollment has been approved by the admin.'
+              : 'Track your enrollment application status'}
+          </p>
         </div>
-        <ApplicationStatusView app={existingApp} />
+        <ApplicationStatusView app={existingApp} onRefresh={refresh} />
       </div>
     );
   }
@@ -238,7 +275,11 @@ export default function StudentRegistration() {
           <h2 className="text-white font-semibold text-lg">Personal Information</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Full Name *" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Enter full name" />
-            <Field label="Email Address *" name="email" type="email" value={form.email} onChange={handleChange} required placeholder="student@example.com" />
+            <div>
+              <label className="block text-gray-400 text-sm mb-1.5">Email Address *</label>
+              <input type="email" name="email" value={form.email} readOnly
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-400 text-sm cursor-not-allowed" />
+            </div>
             <Field label="Phone Number *" name="phone" value={form.phone} onChange={handleChange} required placeholder="+91 XXXXX XXXXX" />
             <Field label="Date of Birth" name="date_of_birth" type="date" value={form.date_of_birth} onChange={handleChange} />
             <div>
