@@ -229,3 +229,118 @@ export const getElectiveSummary = async (req: Request, res: Response, next: Next
         res.status(200).json(data);
     } catch (error) { next(error); }
 };
+
+// Get Pending Grades
+export const getPendingGrades = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data, error } = await supabase
+            .from('grades')
+            .select(`
+                *,
+                students (name, student_id),
+                courses (name, code)
+            `)
+            .eq('status', 'pending');
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Approve Grades (Publish)
+export const approveGrades = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { gradeIds } = req.body; // Array of grade IDs to approve
+
+        if (!gradeIds || !Array.isArray(gradeIds) || gradeIds.length === 0) {
+            res.status(400);
+            throw new Error('No grade IDs provided');
+        }
+
+        const { data, error } = await supabase
+            .from('grades')
+            .update({ status: 'published' })
+            .in('id', gradeIds)
+            .select();
+
+        res.status(200).json({ message: 'Grades published successfully', data });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Get All Courses
+export const getCourses = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data, error } = await supabase
+            .from('courses')
+            .select('*');
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Assign Course to Student (Enrollment)
+export const assignCourseToStudent = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { studentId, courseId, semester, academicYear } = req.body;
+
+        if (!studentId || !courseId || !semester || !academicYear) {
+            res.status(400);
+            throw new Error('Please provide all required fields');
+        }
+
+        // Check if student exists
+        const { data: student, error: studentError } = await supabase
+            .from('students')
+            .select('student_id')
+            .eq('student_id', studentId)
+            .single();
+
+        if (studentError || !student) {
+            res.status(404);
+            throw new Error('Student not found');
+        }
+
+        // Check if course exists
+        const { data: course, error: courseError } = await supabase
+            .from('courses')
+            .select('code')
+            .eq('code', courseId)
+            .single();
+
+        if (courseError || !course) {
+            res.status(404);
+            throw new Error('Course not found');
+        }
+
+        // Insert enrollment
+        const { data, error } = await supabase
+            .from('enrollments')
+            .insert([{
+                student_id: studentId,
+                course_id: courseId,
+                semester,
+                academic_year: academicYear
+            }])
+            .select()
+            .single();
+
+        // Handle unique constraint violation (already enrolled)
+        if (error) {
+            if (error.code === '23505') {
+                res.status(409);
+                throw new Error('Student is already enrolled in this course for this semester.');
+            }
+            throw error;
+        }
+
+        res.status(201).json({ message: 'Course assigned successfully', enrollment: data });
+    } catch (error) {
+        next(error);
+    }
+};

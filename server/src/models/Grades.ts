@@ -4,5 +4,6 @@ export interface IGrades {
     course_id: string;
     exam_type: 'mid' | 'final' | 'quiz' | 'assignment';
     score: number;
+    status: 'pending' | 'published';
     created_at: Date;
 }

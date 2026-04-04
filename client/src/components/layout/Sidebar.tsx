@@ -10,6 +10,7 @@ export const Sidebar: React.FC = () => {
     const adminLinks = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
         { name: 'Course Management', path: '/admin/courses', icon: BookOpen },
+        { name: 'Assign Courses', path: '/admin/enrollments', icon: CheckSquare },
         { name: 'Master Timetable', path: '/admin/timetable', icon: Calendar },
         { name: 'User Management', path: '/admin/users', icon: Users },
         { name: 'Fee Verification', path: '/admin/fee-verification', icon: BadgeCheck },
