@@ -11,6 +11,11 @@ import FeeManagement from './pages/student/FeeManagement';
 import Electives from './pages/student/Electives';
 import FeeVerification from './pages/admin/FeeVerification';
 import UserManagement from './pages/admin/UserManagement';
+import AdminCourseEnrollment from './pages/admin/AdminCourseEnrollment';
+import GradeManager from './pages/faculty/GradeManager';
+import QuizUpload from './pages/faculty/QuizUpload';
+import GradeApprovals from './pages/admin/GradeApprovals';
+import StudentGrades from './pages/student/StudentGrades';
 import EnrollmentManagement from './pages/admin/EnrollmentManagement';
 import StudentRegistration from './pages/student/StudentRegistration';
 
@@ -29,8 +34,8 @@ function App() {
     if (!user) return '/login';
     switch (user.role) {
       case 'admin': return '/admin/courses';
-      case 'faculty': return '/faculty/attendance';
-      case 'student': return '/student/enrollment';
+      case 'faculty': return '/faculty/grades';
+      case 'student': return '/student/grades';
       default: return '/login';
     }
   };
@@ -53,17 +58,20 @@ function App() {
             {/* Admin Routes */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="admin/courses" element={<CourseCreation />} />
-              <Route path="admin/enrollments" element={<EnrollmentManagement />} />
+              <Route path="admin/enrollments" element={<AdminCourseEnrollment />} />
+              <Route path="admin/enrollment-management" element={<EnrollmentManagement />} />
               <Route path="admin/faculty" element={<UserManagement />} />
               <Route path="admin/timetable" element={<TimetableManager />} />
               <Route path="admin/fee-verification" element={<FeeVerification />} />
               <Route path="admin/users" element={<UserManagement />} />
+              <Route path="admin/reports" element={<GradeApprovals />} />
             </Route>
 
             {/* Faculty Routes */}
             <Route element={<ProtectedRoute allowedRoles={['faculty', 'admin']} />}>
               <Route path="faculty/attendance" element={<Placeholder title="Mark Attendance" />} />
-              <Route path="faculty/grades" element={<Placeholder title="Upload Grades" />} />
+              <Route path="faculty/grades" element={<GradeManager />} />
+              <Route path="faculty/quiz" element={<QuizUpload />} />
               <Route path="faculty/timetable" element={<FacultyTimetable />} />
             </Route>
 
@@ -72,7 +80,7 @@ function App() {
               <Route path="student/registration" element={<StudentRegistration />} />
               <Route path="student/enrollment" element={<StudentRegistration />} />
               <Route path="student/electives" element={<Electives />} />
-              <Route path="student/grades" element={<Placeholder title="My Grades" />} />
+              <Route path="student/grades" element={<StudentGrades />} />
               <Route path="student/timetable" element={<StudentTimetable />} />
               <Route path="student/fees" element={<FeeManagement />} />
               <Route path="student/attendance" element={<Placeholder title="Attendance" />} />

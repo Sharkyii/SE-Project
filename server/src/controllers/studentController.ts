@@ -128,7 +128,8 @@ export const viewGrades = async (req: Request, res: Response, next: NextFunction
         const { data, error } = await supabase
             .from('grades')
             .select('*, courses(name)')
-            .eq('student_id', req.user.profile_id);
+            .eq('student_id', req.user.profile_id)
+            .eq('status', 'published');
 
         if (error) throw error;
         res.status(200).json(data);
@@ -201,6 +202,40 @@ export const getTimetable = async (req: Request, res: Response, next: NextFuncti
         }
 
         const { data, error } = await query;
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Get Notifications
+export const getNotifications = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('student_id', req.user.profile_id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Mark Notification as Read
+export const markNotificationRead = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const { data, error } = await supabase
+            .from('notifications')
+            .update({ read_status: true })
+            .eq('id', id)
+            .eq('student_id', req.user.profile_id)
+            .select();
+
         if (error) throw error;
         res.status(200).json(data);
     } catch (error) {

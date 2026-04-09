@@ -147,7 +147,6 @@ BEGIN
     ALTER TABLE courses ALTER COLUMN email_id DROP NOT NULL;
 END $$;
 
-
 -- Add elective fields to courses
 ALTER TABLE courses ADD COLUMN IF NOT EXISTS is_elective BOOLEAN DEFAULT FALSE;
 ALTER TABLE courses ADD COLUMN IF NOT EXISTS max_seats INTEGER DEFAULT 30;
@@ -164,6 +163,39 @@ CREATE TABLE IF NOT EXISTS elective_enrollments (
     FOREIGN KEY (course_id) REFERENCES courses(code) ON DELETE CASCADE
 );
 
+-- ======================================s===================
+-- Grade Management, Quizzes, and Notifications Updates
+-- =========================================================
+
+-- Alter Grades Table to add status for approval workflow
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'grades' AND column_name = 'status') THEN
+        ALTER TABLE grades ADD COLUMN status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'published'));
+    END IF;
+END $$;
+
+-- 12. Quizzes Table (was 11)
+CREATE TABLE IF NOT EXISTS quizzes (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    course_id TEXT NOT NULL,
+    faculty_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    due_date DATE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (course_id) REFERENCES courses(code) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(email_id) ON DELETE CASCADE
+);
+
+-- 13. Notifications Table (was 12)
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    student_id TEXT NOT NULL,
+    message TEXT NOT NULL,
+    read_status BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
 -- 12. Enrollment Applications Table
 CREATE TABLE IF NOT EXISTS enrollment_applications (
     id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

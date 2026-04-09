@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middlewares/auth';
 import { authorize } from '../middlewares/roleGuard';
-import { uploadDocuments, payFee, chooseElectives, getMyElective, getElectiveCourses, viewGrades, submitFeedback, getLeaderboard, getTimetable, getProfile } from '../controllers/studentController';
+import { uploadDocuments, payFee, chooseElectives, getMyElective, getElectiveCourses, viewGrades, submitFeedback, getLeaderboard, getTimetable, getProfile, getNotifications, markNotificationRead } from '../controllers/studentController';
 
 const router = express.Router();
 
@@ -19,5 +19,7 @@ router.get('/grades', viewGrades);
 router.post('/feedback', submitFeedback);
 router.get('/leaderboard', getLeaderboard);
 router.get('/timetable', getTimetable);
+router.get('/notifications', getNotifications);
+router.put('/notifications/:id/read', markNotificationRead);
 
 export default router;
