@@ -11,11 +11,16 @@ import FeeManagement from './pages/student/FeeManagement';
 import Electives from './pages/student/Electives';
 import FeeVerification from './pages/admin/FeeVerification';
 import UserManagement from './pages/admin/UserManagement';
+<<<<<<< HEAD
 import AdminCourseEnrollment from './pages/admin/AdminCourseEnrollment';
 import GradeManager from './pages/faculty/GradeManager';
 import QuizUpload from './pages/faculty/QuizUpload';
 import GradeApprovals from './pages/admin/GradeApprovals';
 import StudentGrades from './pages/student/StudentGrades';
+=======
+import EnrollmentManagement from './pages/admin/EnrollmentManagement';
+import StudentRegistration from './pages/student/StudentRegistration';
+>>>>>>> 349e838e0b496337fc7aaa97b3581e59a5e6c3fa
 
 // Mock components for routes that might not exist yet
 const Placeholder = ({ title }: { title: string }) => (
@@ -56,7 +61,11 @@ function App() {
             {/* Admin Routes */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="admin/courses" element={<CourseCreation />} />
+<<<<<<< HEAD
               <Route path="admin/enrollments" element={<AdminCourseEnrollment />} />
+=======
+              <Route path="admin/enrollments" element={<EnrollmentManagement />} />
+>>>>>>> 349e838e0b496337fc7aaa97b3581e59a5e6c3fa
               <Route path="admin/faculty" element={<UserManagement />} />
               <Route path="admin/timetable" element={<TimetableManager />} />
               <Route path="admin/fee-verification" element={<FeeVerification />} />
@@ -74,11 +83,16 @@ function App() {
 
             {/* Student Routes */}
             <Route element={<ProtectedRoute allowedRoles={['student', 'admin']} />}>
-              <Route path="student/enrollment" element={<Placeholder title="Course Enrollment" />} />
+              <Route path="student/registration" element={<StudentRegistration />} />
+              <Route path="student/enrollment" element={<StudentRegistration />} />
               <Route path="student/electives" element={<Electives />} />
               <Route path="student/grades" element={<StudentGrades />} />
               <Route path="student/timetable" element={<StudentTimetable />} />
               <Route path="student/fees" element={<FeeManagement />} />
+              <Route path="student/attendance" element={<Placeholder title="Attendance" />} />
+              <Route path="student/feedback" element={<Placeholder title="Feedback" />} />
+              <Route path="student/leaderboard" element={<Placeholder title="Leaderboard" />} />
+              <Route path="student/dashboard" element={<Placeholder title="Dashboard" />} />
             </Route>
           </Route>
         </Route>

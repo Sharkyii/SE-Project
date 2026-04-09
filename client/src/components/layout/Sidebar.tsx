@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useStore } from '../../app/store';
-import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck, UserPlus } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Sidebar: React.FC = () => {
@@ -10,7 +10,11 @@ export const Sidebar: React.FC = () => {
     const adminLinks = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
         { name: 'Course Management', path: '/admin/courses', icon: BookOpen },
+<<<<<<< HEAD
         { name: 'Assign Courses', path: '/admin/enrollments', icon: CheckSquare },
+=======
+        { name: 'Enrollment Management', path: '/admin/enrollments', icon: UserPlus },
+>>>>>>> 349e838e0b496337fc7aaa97b3581e59a5e6c3fa
         { name: 'Master Timetable', path: '/admin/timetable', icon: Calendar },
         { name: 'User Management', path: '/admin/users', icon: Users },
         { name: 'Fee Verification', path: '/admin/fee-verification', icon: BadgeCheck },
@@ -29,7 +33,6 @@ export const Sidebar: React.FC = () => {
     const studentLinks = [
         { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
         { name: 'Registration', path: '/student/registration', icon: FileText },
-        { name: 'Documents', path: '/student/documents', icon: Upload },
         { name: 'Fees', path: '/student/fees', icon: CheckSquare },
         { name: 'Electives', path: '/student/electives', icon: BookOpen },
         { name: 'Attendance', path: '/student/attendance', icon: Users },
