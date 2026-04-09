@@ -59,7 +59,7 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="admin/courses" element={<CourseCreation />} />
               <Route path="admin/enrollments" element={<AdminCourseEnrollment />} />
-              <Route path="admin/enrollments" element={<EnrollmentManagement />} />
+              <Route path="admin/enrollment-management" element={<EnrollmentManagement />} />
               <Route path="admin/faculty" element={<UserManagement />} />
               <Route path="admin/timetable" element={<TimetableManager />} />
               <Route path="admin/fee-verification" element={<FeeVerification />} />
