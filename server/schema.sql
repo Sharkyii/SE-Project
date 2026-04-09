@@ -163,8 +163,7 @@ CREATE TABLE IF NOT EXISTS elective_enrollments (
     FOREIGN KEY (course_id) REFERENCES courses(code) ON DELETE CASCADE
 );
 
-<<<<<<< HEAD
--- =========================================================
+-- ======================================s===================
 -- Grade Management, Quizzes, and Notifications Updates
 -- =========================================================
 
@@ -197,7 +196,6 @@ CREATE TABLE IF NOT EXISTS notifications (
     read_status BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
-=======
 -- 12. Enrollment Applications Table
 CREATE TABLE IF NOT EXISTS enrollment_applications (
     id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -227,5 +225,4 @@ CREATE TABLE IF NOT EXISTS student_documents (
     original_name  TEXT NOT NULL,
     uploaded_at    TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (application_id) REFERENCES enrollment_applications(id) ON DELETE CASCADE
->>>>>>> 349e838e0b496337fc7aaa97b3581e59a5e6c3fa
 );
