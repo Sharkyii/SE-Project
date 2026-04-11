@@ -13,6 +13,8 @@ import FeeVerification from './pages/admin/FeeVerification';
 import UserManagement from './pages/admin/UserManagement';
 import EnrollmentManagement from './pages/admin/EnrollmentManagement';
 import StudentRegistration from './pages/student/StudentRegistration';
+import ExamTimetableManager from './pages/admin/ExamTimetableManager';
+import StudentExamTimetable from './pages/student/StudentExamTimetable';
 
 // Mock components for routes that might not exist yet
 const Placeholder = ({ title }: { title: string }) => (
@@ -56,6 +58,7 @@ function App() {
               <Route path="admin/enrollments" element={<EnrollmentManagement />} />
               <Route path="admin/faculty" element={<UserManagement />} />
               <Route path="admin/timetable" element={<TimetableManager />} />
+              <Route path="admin/exam-timetable" element={<ExamTimetableManager />} />
               <Route path="admin/fee-verification" element={<FeeVerification />} />
               <Route path="admin/users" element={<UserManagement />} />
             </Route>
@@ -74,6 +77,7 @@ function App() {
               <Route path="student/electives" element={<Electives />} />
               <Route path="student/grades" element={<Placeholder title="My Grades" />} />
               <Route path="student/timetable" element={<StudentTimetable />} />
+              <Route path="student/exam-timetable" element={<StudentExamTimetable />} />
               <Route path="student/fees" element={<FeeManagement />} />
               <Route path="student/attendance" element={<Placeholder title="Attendance" />} />
               <Route path="student/feedback" element={<Placeholder title="Feedback" />} />

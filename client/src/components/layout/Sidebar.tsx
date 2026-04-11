@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useStore } from '../../app/store';
-import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck, UserPlus } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck, UserPlus, BookMarked } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Sidebar: React.FC = () => {
@@ -12,6 +12,7 @@ export const Sidebar: React.FC = () => {
         { name: 'Course Management', path: '/admin/courses', icon: BookOpen },
         { name: 'Enrollment Management', path: '/admin/enrollments', icon: UserPlus },
         { name: 'Master Timetable', path: '/admin/timetable', icon: Calendar },
+        { name: 'Exam Timetable', path: '/admin/exam-timetable', icon: BookMarked },
         { name: 'User Management', path: '/admin/users', icon: Users },
         { name: 'Fee Verification', path: '/admin/fee-verification', icon: BadgeCheck },
         { name: 'Reports', path: '/admin/reports', icon: ClipboardList },
@@ -33,6 +34,7 @@ export const Sidebar: React.FC = () => {
         { name: 'Electives', path: '/student/electives', icon: BookOpen },
         { name: 'Attendance', path: '/student/attendance', icon: Users },
         { name: 'My Timetable', path: '/student/timetable', icon: Calendar },
+        { name: 'Exam Timetable', path: '/student/exam-timetable', icon: BookMarked },
         { name: 'Grades', path: '/student/grades', icon: GraduationCap },
         { name: 'Feedback', path: '/student/feedback', icon: FileText },
         { name: 'Leaderboard', path: '/student/leaderboard', icon: Award },
