@@ -226,3 +226,19 @@ CREATE TABLE IF NOT EXISTS student_documents (
     uploaded_at    TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (application_id) REFERENCES enrollment_applications(id) ON DELETE CASCADE
 );
+
+-- 14. Exam Timetable Table
+CREATE TABLE IF NOT EXISTS exam_timetables (
+    id           BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    course_id    TEXT NOT NULL,
+    exam_type    TEXT NOT NULL CHECK (exam_type IN ('mid', 'final', 'quiz', 'assignment')),
+    exam_date    DATE NOT NULL,
+    start_time   TIME NOT NULL,
+    end_time     TIME NOT NULL,
+    room_no      TEXT NOT NULL,
+    semester     INTEGER NOT NULL,
+    department   TEXT NOT NULL,
+    section      TEXT NOT NULL DEFAULT 'A',
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (course_id) REFERENCES courses(code) ON DELETE CASCADE
+);
