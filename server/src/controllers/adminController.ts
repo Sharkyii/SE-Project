@@ -329,18 +329,7 @@ export const approveGrades = async (req: Request, res: Response, next: NextFunct
     }
 };
 
-// Get All Courses
-export const getCourses = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { data, error } = await supabase
-            .from('courses')
-            .select('*');
-        if (error) throw error;
-        res.status(200).json(data);
-    } catch (error) {
-        next(error);
-    }
-};
+
 
 // Assign Course to Student (Enrollment)
 export const assignCourseToStudent = async (req: Request, res: Response, next: NextFunction) => {
