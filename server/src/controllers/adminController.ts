@@ -391,3 +391,29 @@ export const assignCourseToStudent = async (req: Request, res: Response, next: N
         next(error);
     }
 };
+
+// Get All Attendance
+export const getAllAttendance = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { courseId, date } = req.query;
+
+        let query = supabase
+            .from('attendance')
+            .select(`
+                *,
+                students (name, department, semester),
+                courses (name, code)
+            `)
+            .order('date', { ascending: false })
+            .limit(1000);
+
+        if (courseId) query = query.eq('course_id', courseId as string);
+        if (date) query = query.eq('date', date as string);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};

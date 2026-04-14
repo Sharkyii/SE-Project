@@ -18,6 +18,7 @@ export const Sidebar: React.FC = () => {
         { name: 'User Management', path: '/admin/users', icon: Users },
         { name: 'Fee Verification', path: '/admin/fee-verification', icon: BadgeCheck },
         { name: 'Reports', path: '/admin/reports', icon: ClipboardList },
+        { name: 'Attendance View', path: '/admin/attendance', icon: CheckSquare },
     ];
 
     const facultyLinks = [

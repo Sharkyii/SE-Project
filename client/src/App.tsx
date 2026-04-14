@@ -21,6 +21,9 @@ import StudentRegistration from './pages/student/StudentRegistration';
 import ExamTimetableManager from './pages/admin/ExamTimetableManager';
 import StudentExamTimetable from './pages/student/StudentExamTimetable';
 import CourseAllocation from './pages/admin/CourseAllocation';
+import AttendanceManager from './pages/faculty/AttendanceManager';
+import StudentAttendance from './pages/student/StudentAttendance';
+import AdminAttendance from './pages/admin/AdminAttendance';
 
 // Mock components for routes that might not exist yet
 const Placeholder = ({ title }: { title: string }) => (
@@ -70,11 +73,12 @@ function App() {
               <Route path="admin/fee-verification" element={<FeeVerification />} />
               <Route path="admin/users" element={<UserManagement />} />
               <Route path="admin/reports" element={<GradeApprovals />} />
+              <Route path="admin/attendance" element={<AdminAttendance />} />
             </Route>
 
             {/* Faculty Routes */}
             <Route element={<ProtectedRoute allowedRoles={['faculty', 'admin']} />}>
-              <Route path="faculty/attendance" element={<Placeholder title="Mark Attendance" />} />
+              <Route path="faculty/attendance" element={<AttendanceManager />} />
               <Route path="faculty/grades" element={<GradeManager />} />
               <Route path="faculty/quiz" element={<QuizUpload />} />
               <Route path="faculty/timetable" element={<FacultyTimetable />} />
@@ -89,7 +93,7 @@ function App() {
               <Route path="student/timetable" element={<StudentTimetable />} />
               <Route path="student/exam-timetable" element={<StudentExamTimetable />} />
               <Route path="student/fees" element={<FeeManagement />} />
-              <Route path="student/attendance" element={<Placeholder title="Attendance" />} />
+              <Route path="student/attendance" element={<StudentAttendance />} />
               <Route path="student/feedback" element={<Placeholder title="Feedback" />} />
               <Route path="student/leaderboard" element={<Placeholder title="Leaderboard" />} />
               <Route path="student/dashboard" element={<Placeholder title="Dashboard" />} />
