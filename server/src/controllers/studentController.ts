@@ -242,3 +242,29 @@ export const markNotificationRead = async (req: Request, res: Response, next: Ne
         next(error);
     }
 };
+
+// Get Attendance
+export const getAttendance = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data: student, error: studentError } = await supabase
+            .from('students')
+            .select('student_id')
+            .eq('email_id', req.user.email)
+            .single();
+            
+        if (studentError || !student) {
+            res.status(404); throw new Error('Student profile not found');
+        }
+
+        const { data, error } = await supabase
+            .from('attendance')
+            .select('*, courses(name, code)')
+            .eq('student_id', student.student_id)
+            .order('date', { ascending: false });
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};

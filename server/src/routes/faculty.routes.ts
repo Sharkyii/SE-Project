@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middlewares/auth';
 import { authorize } from '../middlewares/roleGuard';
-import { markAttendance, uploadGrades, postQuiz, applyLeave, getFacultyGradeReports, getFacultyTimetable, getMyCourses, getEnrolledStudents } from '../controllers/facultyController';
+import { markAttendance, uploadGrades, postQuiz, applyLeave, getFacultyGradeReports, getFacultyTimetable, getMyCourses, getEnrolledStudents, getAttendanceByDate } from '../controllers/facultyController';
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ router.get('/courses', getMyCourses);
 router.get('/courses/:courseId/students', getEnrolledStudents);
 
 router.get('/timetable', getFacultyTimetable);
+router.get('/attendance', getAttendanceByDate);
 router.post('/attendance', markAttendance);
 router.post('/grades', uploadGrades);
 router.get('/grades/reports', getFacultyGradeReports);

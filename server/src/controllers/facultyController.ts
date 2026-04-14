@@ -1,18 +1,63 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/db';
 
-// Mark Attendance
+// Mark Attendance (Bulk)
 export const markAttendance = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { studentId, courseId, date, status } = req.body;
+        const { courseId, date, records } = req.body;
+
+        // Verify faculty owns course
+        const { data: course } = await supabase
+            .from('courses').select('email_id').eq('code', courseId).single();
+        if (!course || course.email_id !== req.user.email) {
+            res.status(403); throw new Error('Not authorized for this course');
+        }
+
+        // 1. Delete existing records for course & date
+        await supabase
+            .from('attendance')
+            .delete()
+            .eq('course_id', courseId)
+            .eq('date', date);
+
+        // 2. Insert new records
+        if (records && records.length > 0) {
+            const insertData = records.map((r: any) => ({
+                student_id: r.student_id,
+                course_id: courseId,
+                date,
+                status: r.status
+            }));
+
+            const { error: insertError } = await supabase
+                .from('attendance')
+                .insert(insertData);
+
+            if (insertError) throw insertError;
+        }
+
+        res.status(200).json({ message: 'Attendance saved successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Get Attendance for a specific course and date
+export const getAttendanceByDate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { courseId, date } = req.query;
+        if (!courseId || !date) {
+            res.status(400); throw new Error('Course ID and Date are required');
+        }
+
         const { data, error } = await supabase
             .from('attendance')
-            .insert([{ student_id: studentId, course_id: courseId, date, status }])
-            .select()
-            .single();
+            .select('*')
+            .eq('course_id', courseId as string)
+            .eq('date', date as string);
 
         if (error) throw error;
-        res.status(201).json(data);
+        res.status(200).json(data);
     } catch (error) {
         next(error);
     }
