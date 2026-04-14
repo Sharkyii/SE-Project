@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middlewares/auth';
 import { authorize as roleGuard } from '../middlewares/roleGuard';
-import { createCourse, assignFaculty, verifyUser, getReports, createTimetable, getTimetable, createStudent, createFaculty, getStudents, getFaculty, getElectiveSummary, getPendingGrades, approveGrades, getCourses, assignCourseToStudent } from '../controllers/adminController';
+import { createCourse, assignFaculty, unassignFaculty, verifyUser, getReports, createTimetable, getTimetable, createStudent, createFaculty, getStudents, getFaculty, getElectiveSummary, getPendingGrades, approveGrades, getCourses, assignCourseToStudent } from '../controllers/adminController';
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ router.get('/courses', getCourses);
 router.post('/courses', createCourse);
 router.post('/enrollments', assignCourseToStudent);
 router.post('/assign-faculty', assignFaculty);
+router.patch('/courses/:courseId/unassign', unassignFaculty);
 router.post('/verify-user', verifyUser);
 router.get('/reports', getReports);
 router.post('/timetable', createTimetable);

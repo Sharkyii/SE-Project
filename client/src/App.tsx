@@ -20,6 +20,7 @@ import EnrollmentManagement from './pages/admin/EnrollmentManagement';
 import StudentRegistration from './pages/student/StudentRegistration';
 import ExamTimetableManager from './pages/admin/ExamTimetableManager';
 import StudentExamTimetable from './pages/student/StudentExamTimetable';
+import CourseAllocation from './pages/admin/CourseAllocation';
 
 // Mock components for routes that might not exist yet
 const Placeholder = ({ title }: { title: string }) => (
@@ -62,6 +63,7 @@ function App() {
               <Route path="admin/courses" element={<CourseCreation />} />
               <Route path="admin/enrollments" element={<AdminCourseEnrollment />} />
               <Route path="admin/enrollment-management" element={<EnrollmentManagement />} />
+              <Route path="admin/course-allocation" element={<CourseAllocation />} />
               <Route path="admin/faculty" element={<UserManagement />} />
               <Route path="admin/timetable" element={<TimetableManager />} />
               <Route path="admin/exam-timetable" element={<ExamTimetableManager />} />

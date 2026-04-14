@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useStore } from '../../app/store';
-import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck, UserPlus, BookMarked } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck, UserPlus, BookMarked, UserCheck } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Sidebar: React.FC = () => {
@@ -12,6 +12,7 @@ export const Sidebar: React.FC = () => {
         { name: 'Course Management', path: '/admin/courses', icon: BookOpen },
         { name: 'Assign Courses', path: '/admin/enrollments', icon: CheckSquare },
         { name: 'Enrollment Management', path: '/admin/enrollment-management', icon: UserPlus },
+        { name: 'Course Allocation', path: '/admin/course-allocation', icon: UserCheck },
         { name: 'Master Timetable', path: '/admin/timetable', icon: Calendar },
         { name: 'Exam Timetable', path: '/admin/exam-timetable', icon: BookMarked },
         { name: 'User Management', path: '/admin/users', icon: Users },
