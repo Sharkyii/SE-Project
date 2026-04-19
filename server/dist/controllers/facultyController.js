@@ -151,7 +151,7 @@ const postQuiz = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.postQuiz = postQuiz;
 // Apply Leave (Placeholder)
-const applyLeave = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+/*const applyLeave = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { reason, startDate, endDate } = req.body;
         // Logic to store leave application
@@ -162,6 +162,22 @@ const applyLeave = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.applyLeave = applyLeave;
+*/
+export const applyLeave = async (req, res) => {
+    try {
+      res.json({ message: "Leave applied" });
+    } catch (err) {
+      res.status(500).json({ message: "Error applying leave" });
+    }
+  };
+  
+  export const getMyLeaves = async (req, res) => {
+    try {
+      res.json({ message: "Fetched leaves" });
+    } catch (err) {
+      res.status(500).json({ message: "Error fetching leaves" });
+    }
+  };
 // Get Faculty Timetable
 const getFacultyTimetable = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

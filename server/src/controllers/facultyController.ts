@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { supabase } from '../config/db';
+import { supabase, supabaseAdmin } from '../config/db';
 
 // Mark Attendance (Bulk)
 export const markAttendance = async (req: Request, res: Response, next: NextFunction) => {
@@ -7,14 +7,14 @@ export const markAttendance = async (req: Request, res: Response, next: NextFunc
         const { courseId, date, records } = req.body;
 
         // Verify faculty owns course
-        const { data: course } = await supabase
+        const { data: course } = await supabaseAdmin
             .from('courses').select('email_id').eq('code', courseId).single();
         if (!course || course.email_id !== req.user.email) {
             res.status(403); throw new Error('Not authorized for this course');
         }
 
         // 1. Delete existing records for course & date
-        await supabase
+        await supabaseAdmin
             .from('attendance')
             .delete()
             .eq('course_id', courseId)
@@ -29,7 +29,7 @@ export const markAttendance = async (req: Request, res: Response, next: NextFunc
                 status: r.status
             }));
 
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseAdmin
                 .from('attendance')
                 .insert(insertData);
 
@@ -50,7 +50,7 @@ export const getAttendanceByDate = async (req: Request, res: Response, next: Nex
             res.status(400); throw new Error('Course ID and Date are required');
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('attendance')
             .select('*')
             .eq('course_id', courseId as string)
@@ -69,7 +69,7 @@ export const uploadGrades = async (req: Request, res: Response, next: NextFuncti
         const { studentEmail, courseId, examType, score } = req.body;
 
         // Verify that the currently logged-in faculty is assigned to teach this course
-        const { data: course, error: courseError } = await supabase
+        const { data: course, error: courseError } = await supabaseAdmin
             .from('courses')
             .select('email_id')
             .eq('code', courseId)
@@ -86,7 +86,7 @@ export const uploadGrades = async (req: Request, res: Response, next: NextFuncti
         }
         
         // Find student ID using email
-        const { data: student, error: studentError } = await supabase
+        const { data: student, error: studentError } = await supabaseAdmin
             .from('students')
             .select('student_id')
             .eq('email_id', studentEmail)
@@ -97,7 +97,7 @@ export const uploadGrades = async (req: Request, res: Response, next: NextFuncti
             throw new Error('Student not found with that email ID');
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('grades')
             .insert([{ student_id: student.student_id, course_id: courseId, exam_type: examType, score, status: 'pending' }])
             .select()
@@ -116,7 +116,7 @@ export const postQuiz = async (req: Request, res: Response, next: NextFunction) 
         const { courseId, title, description, dueDate, facultyId } = req.body;
         
         // Insert Quiz
-        const { data: quizData, error: quizError } = await supabase
+        const { data: quizData, error: quizError } = await supabaseAdmin
             .from('quizzes')
             .insert([{ course_id: courseId, faculty_id: facultyId, title, description, due_date: dueDate }])
             .select()
@@ -125,7 +125,7 @@ export const postQuiz = async (req: Request, res: Response, next: NextFunction) 
         if (quizError) throw quizError;
 
         // Fetch enrolled students
-        const { data: enrollments, error: enrollError } = await supabase
+        const { data: enrollments, error: enrollError } = await supabaseAdmin
             .from('enrollments')
             .select('student_id')
             .eq('course_id', courseId);
@@ -138,7 +138,7 @@ export const postQuiz = async (req: Request, res: Response, next: NextFunction) 
                 message: `New quiz posted for ${courseId}: ${title}. Due on ${dueDate}`
             }));
             
-            const { error: notifError } = await supabase
+            const { error: notifError } = await supabaseAdmin
                 .from('notifications')
                 .insert(notifications);
                 
@@ -152,23 +152,110 @@ export const postQuiz = async (req: Request, res: Response, next: NextFunction) 
 };
 
 
-// Apply Leave (Placeholder)
+// Apply Leave
 export const applyLeave = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { reason, startDate, endDate } = req.body;
-        // Logic to store leave application
-        res.status(201).json({ message: 'Leave application submitted' });
+        const facultyEmail = req.user.email;
+
+        console.log(`Apply Leave Attempt: facultyEmail=${facultyEmail}, startDate=${startDate}, endDate=${endDate}`);
+
+        if (!reason || !startDate || !endDate) {
+            res.status(400); throw new Error('Reason, Start Date, and End Date are required');
+        }
+
+        // 1. Insert Leave Record using Admin client to bypass RLS
+        const { data: leaveData, error: leaveError } = await supabaseAdmin
+            .from('faculty_leaves')
+            .insert([{ faculty_id: facultyEmail, reason, start_date: startDate, end_date: endDate, status: 'pending' }])
+            .select()
+            .single();
+
+        if (leaveError) {
+            console.error('Error inserting faculty leave:', leaveError);
+            res.status(500);
+            throw new Error(`Database error: ${leaveError.message}. Ensure faculty exists with email ${facultyEmail}`);
+        }
+
+        console.log('Leave record inserted successfully:', leaveData.id);
+
+        // 2. Fetch all students enrolled in this faculty's courses
+        const { data: myCourses, error: coursesError } = await supabaseAdmin
+            .from('courses')
+            .select('code')
+            .eq('email_id', facultyEmail);
+
+        if (coursesError) console.error('Error fetching faculty courses:', coursesError);
+
+        if (myCourses && myCourses.length > 0) {
+            const courseCodes = myCourses.map(c => c.code);
+
+            const { data: enrollments } = await supabaseAdmin
+                .from('enrollments')
+                .select('student_id')
+                .in('course_id', courseCodes);
+
+            const { data: electiveEnrollments } = await supabaseAdmin
+                .from('elective_enrollments')
+                .select('student_id')
+                .in('course_id', courseCodes);
+
+            const studentIds = Array.from(new Set([
+                ...(enrollments || []).map(e => e.student_id),
+                ...(electiveEnrollments || []).map(e => e.student_id)
+            ]));
+
+            if (studentIds.length > 0) {
+                const { data: facultyProfile } = await supabaseAdmin
+                    .from('faculty')
+                    .select('name')
+                    .eq('email_id', facultyEmail)
+                    .single();
+
+                const facultyName = facultyProfile?.name || 'A faculty member';
+                
+                const notifications = studentIds.map(sid => ({
+                    student_id: sid,
+                    message: `Important: ${facultyName} is on leave from ${startDate} to ${endDate}. Reason: ${reason}`
+                }));
+
+                const { error: notifError } = await supabaseAdmin.from('notifications').insert(notifications);
+                if (notifError) console.error('Error inserting notifications:', notifError);
+                else console.log(`Notified ${studentIds.length} students about leave.`);
+            }
+        }
+
+        res.status(201).json({ message: 'Leave application submitted and students notified', leave: leaveData });
     } catch (error) {
         next(error);
     }
 };
+
+
+// Get My Leaves
+export const getMyLeaves = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('faculty_leaves')
+            .select('*')
+            .eq('faculty_id', req.user.email)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 
 // Get Faculty Timetable
 export const getFacultyTimetable = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { type, userId, department, semester } = req.query;
 
-        let query = supabase
+        let query = supabaseAdmin
             .from('timetables')
             .select(`
                 *,
@@ -204,7 +291,7 @@ export const getFacultyGradeReports = async (req: Request, res: Response, next: 
         }
 
         // Fetch courses taught by this faculty
-        const { data: courses, error: courseError } = await supabase
+        const { data: courses, error: courseError } = await supabaseAdmin
             .from('courses')
             .select('code, name')
             .eq('email_id', facultyId);
@@ -219,7 +306,7 @@ export const getFacultyGradeReports = async (req: Request, res: Response, next: 
         const courseCodes = courses.map(c => c.code);
 
         // Fetch grades for these courses
-        const { data: grades, error: gradesError } = await supabase
+        const { data: grades, error: gradesError } = await supabaseAdmin
             .from('grades')
             .select('*, courses(name)')
             .in('course_id', courseCodes);
@@ -235,7 +322,7 @@ export const getFacultyGradeReports = async (req: Request, res: Response, next: 
 // Get courses assigned to the logged-in faculty
 export const getMyCourses = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('courses')
             .select('code, name')
             .eq('email_id', req.user.email);
@@ -253,7 +340,7 @@ export const getEnrolledStudents = async (req: Request, res: Response, next: Nex
         const { courseId } = req.params;
         
         // Verify faculty owns course
-        const { data: course } = await supabase
+        const { data: course } = await supabaseAdmin
             .from('courses')
             .select('email_id')
             .eq('code', courseId)
@@ -264,7 +351,7 @@ export const getEnrolledStudents = async (req: Request, res: Response, next: Nex
             throw new Error('Not authorized to view students for this course');
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('enrollments')
             .select('students(name, email_id, student_id)')
             .eq('course_id', courseId);
@@ -272,7 +359,7 @@ export const getEnrolledStudents = async (req: Request, res: Response, next: Nex
         if (error) throw error;
         
         // Also fetch from elective enrollments
-        const { data: electiveData } = await supabase
+        const { data: electiveData } = await supabaseAdmin
             .from('elective_enrollments')
             .select('students(name, email_id, student_id)')
             .eq('course_id', courseId);

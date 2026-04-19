@@ -39,7 +39,7 @@ const Electives: React.FC = () => {
       api.get<ElectiveCourse[]>(`/student/electives?semester=${semester}&academicYear=${year}`),
       api.get<MyElective | null>(`/student/electives/my?semester=${semester}&academicYear=${year}`),
     ]);
-    setCourses(coursesRes.data);
+    setCourses(coursesRes.data || []);
     setMyElective(myRes.data);
   };
 
@@ -78,49 +78,56 @@ const Electives: React.FC = () => {
   };
 
   if (loading) return (
-    <div className="p-6 flex items-center gap-2 text-gray-400">
-      <Loader2 className="w-5 h-5 animate-spin" /> Loading electives...
+    <div className="p-6 flex flex-col items-center justify-center py-20 text-gray-500">
+      <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
+      <p className="font-medium">Loading electives...</p>
     </div>
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-2">Elective Course Selection</h1>
-      <p className="text-gray-400 text-sm mb-6">
-        Semester {semester} · A.Y. {CURRENT_YEAR - 1}–{CURRENT_YEAR} &nbsp;·&nbsp; Choose one elective course
-      </p>
+    <div className="p-6 max-w-5xl mx-auto space-y-8">
+      <header>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+            <BookOpen className="w-8 h-8 text-purple-400" />
+            Elective Selection
+        </h1>
+        <p className="text-gray-400 mt-1">
+            Semester {semester} · A.Y. {CURRENT_YEAR - 1}–{CURRENT_YEAR} &nbsp;·&nbsp; Choose one elective course
+        </p>
+      </header>
 
       {/* Currently selected */}
       {myElective && (
-        <div className="bg-green-900/30 border border-green-700 rounded-xl p-4 mb-6 flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 flex items-start gap-4 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="p-3 bg-emerald-500/20 rounded-xl border border-emerald-500/20">
+            <CheckCircle className="w-6 h-6 text-emerald-400" />
+          </div>
           <div>
-            <p className="text-green-300 font-medium text-sm">Your current elective</p>
-            <p className="text-white font-semibold">{myElective.courses.name}
-              <span className="text-gray-400 font-normal text-sm ml-2">({myElective.course_id})</span>
-            </p>
-            <p className="text-gray-400 text-xs mt-0.5">{myElective.courses.credits} credits · {myElective.courses.description}</p>
-            <p className="text-gray-500 text-xs mt-1">You can change your selection until the deadline.</p>
+            <p className="text-emerald-400 font-bold text-xs uppercase tracking-widest mb-1">Your current selection</p>
+            <h2 className="text-white font-bold text-xl">{myElective.courses.name}</h2>
+            <p className="text-gray-400 text-xs font-mono font-bold mt-1 uppercase tracking-tighter">{myElective.course_id} · {myElective.courses.credits} Credits</p>
+            <p className="text-gray-500 text-sm mt-3 leading-relaxed max-w-2xl">{myElective.courses.description}</p>
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-4 opacity-60">You can change your selection until the enrollment deadline.</p>
           </div>
         </div>
       )}
 
       {msg && (
-        <div className={clsx('flex items-center gap-2 p-3 rounded-lg mb-4 text-sm',
-          msg.type === 'success' ? 'bg-green-900/30 text-green-300 border border-green-700' : 'bg-red-900/30 text-red-300 border border-red-700')}>
-          {msg.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+        <div className={clsx('flex items-center gap-3 p-4 rounded-xl text-sm border animate-in fade-in slide-in-from-top-2 duration-300',
+          msg.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20')}>
+          {msg.type === 'success' ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
           {msg.text}
         </div>
       )}
 
       {courses.length === 0 ? (
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-8 text-center">
-          <BookOpen className="w-10 h-10 text-gray-500 mx-auto mb-3" />
-          <p className="text-gray-400">No elective courses available yet.</p>
-          <p className="text-gray-500 text-sm mt-1">Check back later or contact your administrator.</p>
+        <div className="glass-effect rounded-2xl border border-dashed border-gray-700 p-20 text-center shadow-xl">
+          <BookOpen className="w-16 h-16 text-gray-700 mx-auto mb-6 opacity-20" />
+          <h3 className="text-xl font-bold text-white mb-2">No electives available</h3>
+          <p className="text-gray-400 max-w-xs mx-auto">Elective courses haven't been published for this semester yet.</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
           {courses.map((course) => {
             const isSelected = myElective?.course_id === course.code;
             const isFull = course.available_seats <= 0;
@@ -128,47 +135,56 @@ const Electives: React.FC = () => {
 
             return (
               <div key={course.code} className={clsx(
-                'bg-gray-800 rounded-xl border p-5 flex flex-col gap-3 transition-colors',
-                isSelected ? 'border-green-600 bg-green-900/10' : 'border-gray-700 hover:border-gray-500'
+                'glass-effect rounded-2xl border p-6 flex flex-col gap-4 transition-all hover:scale-[1.02] shadow-xl group',
+                isSelected ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-gray-800 hover:border-gray-600'
               )}>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-white font-semibold">{course.name}</h3>
-                    <p className="text-gray-400 text-xs mt-0.5">{course.code} · {course.credits} credits</p>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h3 className="text-white font-bold text-lg group-hover:text-blue-400 transition-colors truncate">{course.name}</h3>
+                    <p className="text-xs font-bold text-gray-500 font-mono tracking-tighter uppercase mt-1">{course.code} · {course.credits} Credits</p>
                   </div>
                   {isSelected && (
-                    <span className="flex items-center gap-1 text-xs text-green-400 bg-green-900/40 border border-green-700 px-2 py-0.5 rounded-full flex-shrink-0">
-                      <CheckCircle className="w-3 h-3" /> Selected
+                    <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-md flex-shrink-0">
+                      Enrolled
                     </span>
                   )}
                 </div>
 
                 {course.description && (
-                  <p className="text-gray-400 text-sm leading-relaxed">{course.description}</p>
+                  <p className="text-gray-400 text-sm leading-relaxed line-clamp-3">{course.description}</p>
                 )}
 
-                <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-700">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>{course.enrolled}/{course.max_seats} enrolled</span>
-                    {isFull && <span className="text-red-400 font-medium ml-1">· Full</span>}
-                    {!isFull && <span className="text-gray-500 ml-1">· {course.available_seats} seats left</span>}
+                <div className="flex items-center justify-between mt-auto pt-6 border-t border-gray-800/50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2">
+                        <div className="w-6 h-6 rounded-full border-2 border-gray-900 bg-gray-800 flex items-center justify-center">
+                            <Users size={10} className="text-gray-400" />
+                        </div>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Enrollment</span>
+                        <span className="text-xs font-bold text-gray-300">{course.enrolled} / {course.max_seats}</span>
+                    </div>
+                    {isFull ? (
+                         <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest ml-2 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">Full</span>
+                    ) : (
+                         <span className="text-[10px] font-bold text-emerald-500/60 uppercase tracking-widest ml-2">{course.available_seats} Left</span>
+                    )}
                   </div>
 
                   <button
                     onClick={() => handleChoose(course.code)}
                     disabled={isSelected || isFull || !!submitting}
                     className={clsx(
-                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5',
+                      'px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg active:scale-95',
                       isSelected
-                        ? 'bg-green-800 text-green-300 cursor-default'
+                        ? 'bg-emerald-600 text-white cursor-default shadow-emerald-600/20'
                         : isFull
-                          ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                          : 'bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-60'
+                          ? 'bg-gray-800 text-gray-600 cursor-not-allowed border border-gray-700'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20 disabled:opacity-50'
                     )}
                   >
-                    {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                    {isSelected ? 'Enrolled' : isFull ? 'Full' : 'Choose'}
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (isSelected ? 'Selected' : isFull ? 'No Seats' : 'Enroll Now')}
                   </button>
                 </div>
               </div>
@@ -179,5 +195,6 @@ const Electives: React.FC = () => {
     </div>
   );
 };
+
 
 export default Electives;

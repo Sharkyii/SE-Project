@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { supabase } from '../config/db';
+import { supabase, supabaseAdmin } from '../config/db';
 
 // Admin: Create exam timetable entry
 export const createExamEntry = async (req: Request, res: Response, next: NextFunction) => {
@@ -11,7 +11,7 @@ export const createExamEntry = async (req: Request, res: Response, next: NextFun
         }
 
         // Conflict check: same room, same date, overlapping time
-        const { data: conflicts } = await supabase
+        const { data: conflicts } = await supabaseAdmin
             .from('exam_timetables')
             .select('id')
             .eq('room_no', room_no)
@@ -22,7 +22,7 @@ export const createExamEntry = async (req: Request, res: Response, next: NextFun
             res.status(409); throw new Error(`Room ${room_no} is already booked on ${exam_date} during that time slot`);
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('exam_timetables')
             .insert([{ course_id, exam_type, exam_date, start_time, end_time, room_no, semester: Number(semester), department, section: section || 'A' }])
             .select()
@@ -38,7 +38,7 @@ export const getExamTimetable = async (req: Request, res: Response, next: NextFu
     try {
         const { department, semester, section, exam_type } = req.query;
 
-        let query = supabase
+        let query = supabaseAdmin
             .from('exam_timetables')
             .select('*, courses(name, code)')
             .order('exam_date', { ascending: true })
@@ -59,11 +59,12 @@ export const getExamTimetable = async (req: Request, res: Response, next: NextFu
 export const deleteExamEntry = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
-        const { error } = await supabase.from('exam_timetables').delete().eq('id', id);
+        const { error } = await supabaseAdmin.from('exam_timetables').delete().eq('id', id);
         if (error) throw error;
         res.json({ message: 'Exam entry deleted' });
     } catch (error) { next(error); }
 };
+
 
 // Student: Get own exam timetable
 export const getStudentExamTimetable = async (req: Request, res: Response, next: NextFunction) => {

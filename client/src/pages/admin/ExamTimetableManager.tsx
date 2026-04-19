@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Plus, Save, Trash2, X, Calendar, Clock } from 'lucide-react';
+import { BookOpen, Plus, Save, Trash2, X, Calendar, Clock, Loader2, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 
 const EXAM_TYPES = ['mid', 'final', 'quiz', 'assignment'] as const;
 type ExamType = typeof EXAM_TYPES[number];
 
-const DEPARTMENTS = ['CSE','ECE','EEE','ME','CE','IT','MBA','MCA'];
+const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'ME', 'CE', 'IT', 'MBA', 'MCA'];
 
 interface ExamEntry {
     id: number;
@@ -22,21 +22,26 @@ interface ExamEntry {
 }
 
 const emptyForm = {
-    course_id: '', course_name: '', exam_type: 'mid' as ExamType,
-    exam_date: '', start_time: '09:00', end_time: '12:00', room_no: '',
+    course_id: '',
+    exam_type: 'mid' as ExamType,
+    exam_date: '',
+    start_time: '09:00',
+    end_time: '12:00',
+    room_no: '',
 };
 
 const ExamTimetableManager: React.FC = () => {
     const [department, setDepartment] = useState('CSE');
-    const [semester, setSemester]     = useState(1);
-    const [section, setSection]       = useState('A');
-    const [examType, setExamType]     = useState<ExamType | ''>('');
-    const [entries, setEntries]       = useState<ExamEntry[]>([]);
-    const [loading, setLoading]       = useState(false);
-    const [modalOpen, setModalOpen]   = useState(false);
-    const [form, setForm]             = useState({ ...emptyForm });
-    const [saving, setSaving]         = useState(false);
-    const [error, setError]           = useState('');
+    const [semester, setSemester] = useState(1);
+    const [section, setSection] = useState('A');
+    const [examType, setExamType] = useState<ExamType | ''>('');
+    const [entries, setEntries] = useState<ExamEntry[]>([]);
+    const [courses, setCourses] = useState<{ name: string; code: string }[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [form, setForm] = useState({ ...emptyForm });
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState('');
 
     const fetchEntries = async () => {
         setLoading(true);
@@ -44,12 +49,27 @@ const ExamTimetableManager: React.FC = () => {
             const params: Record<string, string | number> = { department, semester, section };
             if (examType) params.exam_type = examType;
             const res = await api.get('/exams/admin', { params });
-            setEntries(res.data);
-        } catch { /* silent */ }
-        finally { setLoading(false); }
+            setEntries(res.data || []);
+        } catch (err) {
+            console.error('Failed to fetch entries', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    useEffect(() => { fetchEntries(); }, [department, semester, section, examType]);
+    const fetchCourses = async () => {
+        try {
+            const res = await api.get('/admin/courses');
+            setCourses(res.data || []);
+        } catch (err) {
+            console.error('Failed to fetch courses', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchEntries();
+        fetchCourses();
+    }, [department, semester, section, examType]);
 
     const openModal = () => {
         setForm({ ...emptyForm });
@@ -59,49 +79,57 @@ const ExamTimetableManager: React.FC = () => {
 
     const handleSave = async () => {
         if (!form.course_id || !form.exam_date || !form.start_time || !form.end_time || !form.room_no) {
-            setError('All fields are required.'); return;
+            setError('All fields are required.');
+            return;
         }
         if (form.end_time <= form.start_time) {
-            setError('End time must be after start time.'); return;
+            setError('End time must be after start time.');
+            return;
         }
-        setSaving(true); setError('');
+        setSaving(true);
+        setError('');
         try {
             await api.post('/exams/', {
-                course_id: form.course_id,
-                exam_type: form.exam_type,
-                exam_date: form.exam_date,
-                start_time: form.start_time,
-                end_time: form.end_time,
-                room_no: form.room_no,
-                semester, department, section,
+                ...form,
+                semester,
+                department,
+                section,
             });
             setModalOpen(false);
             fetchEntries();
         } catch (err: any) {
             setError(err.response?.data?.message || err.message || 'Failed to schedule exam.');
-        } finally { setSaving(false); }
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleDelete = async (id: number) => {
         if (!confirm('Delete this exam entry?')) return;
-        try { await api.delete(`/exams/${id}`); fetchEntries(); }
-        catch { /* silent */ }
+        try {
+            await api.delete(`/exams/${id}`);
+            fetchEntries();
+        } catch (err) {
+            console.error('Failed to delete', err);
+        }
     };
 
     const fmt = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', {
-        weekday: 'long', day: 'numeric', month: 'short', year: 'numeric',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
     });
 
     const fmtTime = (t: string) => {
         const [h, m] = t.split(':').map(Number);
         const ampm = h >= 12 ? 'PM' : 'AM';
-        return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+        return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
     };
 
     const inputCls = 'w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-all text-white placeholder-gray-500 outline-none';
     const labelCls = 'block text-xs font-medium text-gray-400 mb-1';
 
-    // Group entries by date
     const grouped = entries.reduce<Record<string, ExamEntry[]>>((acc, e) => {
         (acc[e.exam_date] = acc[e.exam_date] || []).push(e);
         return acc;
@@ -129,19 +157,19 @@ const ExamTimetableManager: React.FC = () => {
                 <div className="flex-1 min-w-[150px]">
                     <label className={labelCls}>Department</label>
                     <select value={department} onChange={e => setDepartment(e.target.value)} className={inputCls}>
-                        {DEPARTMENTS.map(d => <option key={d} className="bg-gray-900">{d}</option>)}
+                        {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-gray-900">{d}</option>)}
                     </select>
                 </div>
                 <div className="flex-1 min-w-[150px]">
                     <label className={labelCls}>Semester</label>
                     <select value={semester} onChange={e => setSemester(Number(e.target.value))} className={inputCls}>
-                        {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s} className="bg-gray-900">Sem {s}</option>)}
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s} className="bg-gray-900">Sem {s}</option>)}
                     </select>
                 </div>
                 <div className="flex-1 min-w-[150px]">
                     <label className={labelCls}>Section</label>
                     <select value={section} onChange={e => setSection(e.target.value)} className={inputCls}>
-                        {['A','B','C','D'].map(s => <option key={s} className="bg-gray-900">{s}</option>)}
+                        {['A', 'B', 'C', 'D'].map(s => <option key={s} value={s} className="bg-gray-900">{s}</option>)}
                     </select>
                 </div>
                 <div className="flex-1 min-w-[150px]">
@@ -156,7 +184,7 @@ const ExamTimetableManager: React.FC = () => {
             {/* Entries */}
             {loading ? (
                 <div className="flex justify-center py-20">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                    <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
                 </div>
             ) : sortedDates.length === 0 ? (
                 <div className="glass-effect rounded-2xl border border-dashed border-gray-700 p-16 text-center shadow-xl">
@@ -180,15 +208,8 @@ const ExamTimetableManager: React.FC = () => {
                             </div>
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 {grouped[date]
-                                    .sort((a,b) => a.start_time.localeCompare(b.start_time))
+                                    .sort((a, b) => a.start_time.localeCompare(b.start_time))
                                     .map(entry => {
-                                        const duration = (() => {
-                                            const [sh, sm] = entry.start_time.split(':').map(Number);
-                                            const [eh, em] = entry.end_time.split(':').map(Number);
-                                            const mins = (eh * 60 + em) - (sh * 60 + sm);
-                                            return mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60 ? mins%60+'m' : ''}`.trim() : `${mins}m`;
-                                        })();
-                                        
                                         const typeColors: Record<ExamType, string> = {
                                             mid: 'border-l-blue-500 bg-blue-500/10 text-blue-400',
                                             final: 'border-l-red-500 bg-red-500/10 text-red-400',
@@ -216,8 +237,6 @@ const ExamTimetableManager: React.FC = () => {
                                                             <Clock className="w-3 h-3 text-gray-400" />
                                                         </div>
                                                         <span className="font-medium">{fmtTime(entry.start_time)} – {fmtTime(entry.end_time)}</span>
-                                                        <span className="text-gray-600 font-bold">·</span>
-                                                        <span className="text-gray-500">{duration}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-gray-300">
                                                         <div className="p-1 bg-gray-800 rounded">
@@ -254,7 +273,8 @@ const ExamTimetableManager: React.FC = () => {
                         </div>
 
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3 mb-6">
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 flex-shrink-0" />
                                 {error}
                             </div>
                         )}
@@ -262,11 +282,19 @@ const ExamTimetableManager: React.FC = () => {
                         <div className="space-y-5">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className={labelCls}>Course Code *</label>
-                                    <input className={inputCls}
+                                    <label className={labelCls}>Course *</label>
+                                    <select
+                                        className={inputCls}
                                         value={form.course_id}
-                                        onChange={e => setForm(f => ({ ...f, course_id: e.target.value.toUpperCase() }))}
-                                        placeholder="e.g. CS201" />
+                                        onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))}
+                                    >
+                                        <option value="" className="bg-gray-900">Select Course</option>
+                                        {courses.map(c => (
+                                            <option key={c.code} value={c.code} className="bg-gray-900">
+                                                {c.code} - {c.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div>
                                     <label className={labelCls}>Exam Type *</label>
@@ -301,23 +329,6 @@ const ExamTimetableManager: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Duration preview */}
-                            {form.start_time && form.end_time && form.end_time > form.start_time && (() => {
-                                const [sh, sm] = form.start_time.split(':').map(Number);
-                                const [eh, em] = form.end_time.split(':').map(Number);
-                                const mins = (eh * 60 + em) - (sh * 60 + sm);
-                                return (
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
-                                        <Clock className="w-3 h-3 text-gray-500" />
-                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                            Duration: <span className="text-gray-300">
-                                                {Math.floor(mins/60) > 0 ? `${Math.floor(mins/60)}h ` : ''}{mins%60 > 0 ? `${mins%60}m` : ''}
-                                            </span>
-                                        </span>
-                                    </div>
-                                );
-                            })()}
-
                             <div>
                                 <label className={labelCls}>Room / Hall *</label>
                                 <input className={inputCls}
@@ -334,7 +345,7 @@ const ExamTimetableManager: React.FC = () => {
                             </button>
                             <button onClick={handleSave} disabled={saving}
                                 className="px-6 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg flex items-center gap-2 text-sm font-bold shadow-lg shadow-red-600/20 transition-all active:scale-95">
-                                <Save className="w-4 h-4" />
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 {saving ? 'Saving...' : 'Schedule Exam'}
                             </button>
                         </div>

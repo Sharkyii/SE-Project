@@ -29,7 +29,9 @@ import StudentAttendance from './pages/student/StudentAttendance';
 import AdminAttendance from './pages/admin/AdminAttendance';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import FacultyDashboard from './pages/faculty/FacultyDashboard';
+import FacultyLeave from './pages/faculty/FacultyLeave';
 import StudentDashboard from './pages/student/StudentDashboard';
+
 import TestPage from './pages/TestPage';
 
 // Mock components for routes that might not exist yet
@@ -96,7 +98,9 @@ function App() {
               <Route path="/faculty/grades" element={<GradeManager />} />
               <Route path="/faculty/quiz" element={<QuizUpload />} />
               <Route path="/faculty/timetable" element={<FacultyTimetable />} />
+              <Route path="/faculty/leave" element={<FacultyLeave />} />
             </Route>
+
 
             {/* Student Routes */}
             <Route element={<ProtectedRoute allowedRoles={['student', 'admin']} />}>
