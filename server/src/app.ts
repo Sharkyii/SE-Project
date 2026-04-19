@@ -14,6 +14,7 @@ import studentRoutes from './routes/student.routes';
 import feeRoutes from './routes/fee.routes';
 import enrollmentRoutes from './routes/enrollment.routes';
 import examRoutes from './routes/exam.routes';
+import chatbotRoutes from './routes/chatbot';
 
 const app: Application = express();
 
@@ -36,6 +37,7 @@ app.use('/api/student', studentRoutes);
 app.use('/api/fees', feeRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/exams', examRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

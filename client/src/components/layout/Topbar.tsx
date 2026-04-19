@@ -45,39 +45,39 @@ export const Topbar: React.FC = () => {
     const unreadCount = notifications.filter(n => !n.read_status).length;
 
     return (
-        <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 relative">
-            <h1 className="text-xl font-bold text-gray-800">Academic ERP</h1>
+        <div className="h-16 glass-effect border-b border-gray-800/50 flex items-center justify-between px-6 relative">
+            <h1 className="text-xl font-bold text-gradient">Academic ERP</h1>
             <div className="flex items-center space-x-6">
                 {user?.role === 'student' && (
                     <div className="relative">
                         <button 
-                            className="relative p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                            className="relative p-2 text-gray-400 hover:text-blue-400 transition-colors"
                             onClick={() => setShowNotifications(!showNotifications)}
                         >
                             <Bell className="w-5 h-5" />
                             {unreadCount > 0 && (
-                                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full">
+                                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
                                     {unreadCount}
                                 </span>
                             )}
                         </button>
 
                         {showNotifications && (
-                            <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                                <div className="p-4 border-b border-gray-200">
-                                    <h3 className="font-semibold text-gray-800">Notifications</h3>
+                            <div className="absolute right-0 mt-2 w-80 glass-effect border border-gray-800 rounded-xl shadow-2xl z-50">
+                                <div className="p-4 border-b border-gray-800">
+                                    <h3 className="font-semibold text-white">Notifications</h3>
                                 </div>
                                 <div className="max-h-96 overflow-y-auto">
                                     {notifications.length === 0 ? (
-                                        <div className="p-4 text-sm text-gray-500 text-center">No notifications</div>
+                                        <div className="p-4 text-sm text-gray-400 text-center">No notifications</div>
                                     ) : (
                                         notifications.map((n) => (
                                             <div 
                                                 key={n.id} 
-                                                className={`p-4 border-b border-gray-100 ${n.read_status ? 'bg-white' : 'bg-blue-50'} cursor-pointer hover:bg-gray-50 transition-colors`}
+                                                className={`p-4 border-b border-gray-800/50 ${n.read_status ? 'bg-gray-900/20' : 'bg-blue-900/20'} cursor-pointer hover:bg-gray-800/30 transition-colors`}
                                                 onClick={() => !n.read_status && handleMarkRead(n.id)}
                                             >
-                                                <p className="text-sm text-gray-800">{n.message}</p>
+                                                <p className="text-sm text-gray-200">{n.message}</p>
                                                 <span className="text-xs text-gray-500 mt-1 block">
                                                     {new Date(n.created_at).toLocaleString()}
                                                 </span>
@@ -90,14 +90,14 @@ export const Topbar: React.FC = () => {
                     </div>
                 )}
                 <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <UserIcon className="w-5 h-5 text-blue-600" />
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                        <UserIcon className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{user?.email} ({user?.role})</span>
+                    <span className="text-sm font-medium text-gray-300">{user?.email} <span className="text-blue-400">({user?.role})</span></span>
                 </div>
                 <button
                     onClick={handleLogout}
-                    className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                    className="p-2 text-gray-400 hover:text-red-400 transition-colors"
                     title="Logout"
                 >
                     <LogOut className="w-5 h-5" />
