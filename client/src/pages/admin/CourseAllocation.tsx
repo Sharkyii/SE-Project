@@ -135,7 +135,7 @@ const CourseAllocation: React.FC = () => {
         }
     };
 
-    const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all';
+    const inputCls = 'w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all text-white placeholder-gray-500';
 
     if (loading) {
         return (
@@ -148,45 +148,45 @@ const CourseAllocation: React.FC = () => {
     return (
         <div className="max-w-6xl mx-auto p-6">
             {/* Header */}
-            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <UserCheck className="w-7 h-7 text-blue-600" />
+            <h1 className="text-3xl font-bold text-white mb-6 flex items-center gap-2">
+                <UserCheck className="w-8 h-8 text-blue-400" />
                 Course Allocation
             </h1>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <BookOpen className="w-5 h-5 text-blue-600" />
+                <div className="glass-effect rounded-xl border border-gray-800 p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                        <BookOpen className="w-5 h-5 text-blue-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500">Total Courses</p>
-                        <p className="text-xl font-bold text-gray-800">{stats.total}</p>
+                        <p className="text-sm text-gray-400">Total Courses</p>
+                        <p className="text-xl font-bold text-white">{stats.total}</p>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="glass-effect rounded-xl border border-gray-800 p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500">Assigned</p>
-                        <p className="text-xl font-bold text-green-700">{stats.assigned}</p>
+                        <p className="text-sm text-gray-400">Assigned</p>
+                        <p className="text-xl font-bold text-green-400">{stats.assigned}</p>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <AlertCircle className="w-5 h-5 text-amber-600" />
+                <div className="glass-effect rounded-xl border border-gray-800 p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 bg-amber-600/20 rounded-lg flex items-center justify-center">
+                        <AlertCircle className="w-5 h-5 text-amber-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500">Unassigned</p>
-                        <p className="text-xl font-bold text-amber-700">{stats.unassigned}</p>
+                        <p className="text-sm text-gray-400">Unassigned</p>
+                        <p className="text-xl font-bold text-amber-400">{stats.unassigned}</p>
                     </div>
                 </div>
             </div>
 
             {/* Message */}
             {msg && (
-                <div className={`flex items-center gap-2 p-3 rounded-lg mb-4 text-sm ${msg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                <div className={`flex items-center gap-2 p-3 rounded-lg mb-4 text-sm ${msg.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                     {msg.type === 'success' ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
                     {msg.text}
                     <button onClick={() => setMsg(null)} className="ml-auto"><X className="w-4 h-4" /></button>
@@ -194,9 +194,9 @@ const CourseAllocation: React.FC = () => {
             )}
 
             {/* Search & Filter Bar */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-col sm:flex-row gap-3">
+            <div className="glass-effect rounded-xl border border-gray-800 p-4 mb-6 flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
                     <input
                         type="text"
                         placeholder="Search by course name or code..."
@@ -206,7 +206,7 @@ const CourseAllocation: React.FC = () => {
                     />
                 </div>
                 <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
                     <select
                         value={filterStatus}
                         onChange={e => setFilterStatus(e.target.value as FilterStatus)}
@@ -216,105 +216,107 @@ const CourseAllocation: React.FC = () => {
                         <option value="assigned">Assigned</option>
                         <option value="unassigned">Unassigned</option>
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                 </div>
             </div>
 
             {/* Course Table */}
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="glass-effect rounded-xl border border-gray-800 overflow-hidden">
                 {filteredCourses.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500">
-                        <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <div className="p-12 text-center text-gray-400">
+                        <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-600" />
                         <p className="font-medium">No courses found</p>
                         <p className="text-sm mt-1">Try adjusting your search or filter criteria.</p>
                     </div>
                 ) : (
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">
-                            <tr>
-                                <th className="px-4 py-3 text-left font-medium">Code</th>
-                                <th className="px-4 py-3 text-left font-medium">Course Name</th>
-                                <th className="px-4 py-3 text-left font-medium">Credits</th>
-                                <th className="px-4 py-3 text-left font-medium">Type</th>
-                                <th className="px-4 py-3 text-left font-medium">Assigned Faculty</th>
-                                <th className="px-4 py-3 text-left font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredCourses.map(course => (
-                                <tr key={course.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-                                    <td className="px-4 py-3 font-mono text-xs font-semibold text-blue-700">{course.code}</td>
-                                    <td className="px-4 py-3">
-                                        <div className="font-medium text-gray-800">{course.name}</div>
-                                        {course.description && (
-                                            <div className="text-xs text-gray-400 mt-0.5 max-w-xs truncate">{course.description}</div>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600">{course.credits}</td>
-                                    <td className="px-4 py-3">
-                                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${course.is_elective ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                            {course.is_elective ? 'Elective' : 'Regular'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {course.faculty ? (
-                                            <div>
-                                                <div className="font-medium text-gray-800">{course.faculty.name}</div>
-                                                <div className="text-xs text-gray-400">{course.faculty.email_id}</div>
-                                                <div className="text-xs text-gray-400">{course.faculty.department} · {course.faculty.designation}</div>
-                                            </div>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                                                <AlertCircle className="w-3 h-3" />
-                                                Unassigned
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => openAssignModal(course)}
-                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
-                                            >
-                                                <UserCheck className="w-3 h-3" />
-                                                {course.email_id ? 'Reassign' : 'Assign'}
-                                            </button>
-                                            {course.email_id && (
-                                                <button
-                                                    onClick={() => handleUnassign(course)}
-                                                    disabled={actionLoading}
-                                                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1 disabled:opacity-50"
-                                                >
-                                                    <UserX className="w-3 h-3" />
-                                                    Unassign
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-900/50 text-gray-300 border-b border-gray-800">
+                                <tr>
+                                    <th className="px-4 py-3 text-left font-medium uppercase tracking-wider text-xs">Code</th>
+                                    <th className="px-4 py-3 text-left font-medium uppercase tracking-wider text-xs">Course Name</th>
+                                    <th className="px-4 py-3 text-left font-medium uppercase tracking-wider text-xs">Credits</th>
+                                    <th className="px-4 py-3 text-left font-medium uppercase tracking-wider text-xs">Type</th>
+                                    <th className="px-4 py-3 text-left font-medium uppercase tracking-wider text-xs">Assigned Faculty</th>
+                                    <th className="px-4 py-3 text-left font-medium uppercase tracking-wider text-xs">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-800">
+                                {filteredCourses.map(course => (
+                                    <tr key={course.id} className="hover:bg-gray-800/30 transition-colors">
+                                        <td className="px-4 py-3 font-mono text-xs font-semibold text-blue-400">{course.code}</td>
+                                        <td className="px-4 py-3">
+                                            <div className="font-medium text-white">{course.name}</div>
+                                            {course.description && (
+                                                <div className="text-xs text-gray-500 mt-0.5 max-w-xs truncate">{course.description}</div>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-300">{course.credits}</td>
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${course.is_elective ? 'bg-purple-900/30 text-purple-400 border border-purple-500/20' : 'bg-blue-900/30 text-blue-400 border border-blue-500/20'}`}>
+                                                {course.is_elective ? 'Elective' : 'Regular'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {course.faculty ? (
+                                                <div>
+                                                    <div className="font-medium text-white">{course.faculty.name}</div>
+                                                    <div className="text-xs text-gray-400">{course.faculty.email_id}</div>
+                                                    <div className="text-xs text-gray-500">{course.faculty.department} · {course.faculty.designation}</div>
+                                                </div>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-900/30 text-amber-400 border border-amber-500/20">
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    Unassigned
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => openAssignModal(course)}
+                                                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
+                                                >
+                                                    <UserCheck className="w-3 h-3" />
+                                                    {course.email_id ? 'Reassign' : 'Assign'}
+                                                </button>
+                                                {course.email_id && (
+                                                    <button
+                                                        onClick={() => handleUnassign(course)}
+                                                        disabled={actionLoading}
+                                                        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-1 disabled:opacity-50"
+                                                    >
+                                                        <UserX className="w-3 h-3" />
+                                                        Unassign
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
-            <p className="text-xs text-gray-400 mt-3 text-right">
+            <p className="text-xs text-gray-500 mt-3 text-right">
                 Showing {filteredCourses.length} of {courses.length} courses
             </p>
 
             {/* Assignment Modal */}
             {modalOpen && selectedCourse && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="glass-effect bg-gray-900 rounded-xl shadow-2xl w-full max-w-lg border border-gray-800">
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-5 border-b border-gray-200">
+                        <div className="flex items-center justify-between p-5 border-b border-gray-800">
                             <div>
-                                <h2 className="text-lg font-bold text-gray-800">Assign Faculty</h2>
-                                <p className="text-sm text-gray-500 mt-0.5">
+                                <h2 className="text-lg font-bold text-white">Assign Faculty</h2>
+                                <p className="text-sm text-gray-400 mt-0.5">
                                     {selectedCourse.code} — {selectedCourse.name}
                                 </p>
                             </div>
-                            <button onClick={() => setModalOpen(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                            <button onClick={() => setModalOpen(false)} className="p-1 hover:bg-gray-800 rounded-lg transition-colors">
                                 <X className="w-5 h-5 text-gray-400" />
                             </button>
                         </div>
@@ -322,18 +324,18 @@ const CourseAllocation: React.FC = () => {
                         {/* Modal Body */}
                         <div className="p-5 space-y-4">
                             {selectedCourse.faculty && (
-                                <div className="bg-gray-50 rounded-lg p-3 text-sm">
-                                    <span className="text-gray-500">Currently assigned:</span>
-                                    <span className="ml-2 font-medium text-gray-800">{selectedCourse.faculty.name}</span>
-                                    <span className="text-gray-400 ml-1">({selectedCourse.faculty.email_id})</span>
+                                <div className="bg-gray-800/50 rounded-lg p-3 text-sm border border-gray-700">
+                                    <span className="text-gray-400">Currently assigned:</span>
+                                    <span className="ml-2 font-medium text-white">{selectedCourse.faculty.name}</span>
+                                    <span className="text-gray-500 ml-1">({selectedCourse.faculty.email_id})</span>
                                 </div>
                             )}
 
                             {/* Faculty Search */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Search Faculty</label>
+                                <label className="block text-sm font-medium text-gray-300 mb-1">Search Faculty</label>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
                                     <input
                                         type="text"
                                         placeholder="Search by name, email, or department..."
@@ -345,14 +347,14 @@ const CourseAllocation: React.FC = () => {
                             </div>
 
                             {/* Faculty List */}
-                            <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
+                            <div className="max-h-60 overflow-y-auto border border-gray-800 rounded-lg divide-y divide-gray-800 bg-gray-900/30">
                                 {filteredFaculty.length === 0 ? (
-                                    <div className="p-4 text-center text-gray-400 text-sm">No faculty found</div>
+                                    <div className="p-4 text-center text-gray-500 text-sm">No faculty found</div>
                                 ) : (
                                     filteredFaculty.map(f => (
                                         <label
                                             key={f.email_id}
-                                            className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-blue-50 transition-colors ${selectedFacultyEmail === f.email_id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''}`}
+                                            className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-blue-600/10 transition-colors ${selectedFacultyEmail === f.email_id ? 'bg-blue-600/20 border-l-4 border-l-blue-500' : ''}`}
                                         >
                                             <input
                                                 type="radio"
@@ -360,15 +362,15 @@ const CourseAllocation: React.FC = () => {
                                                 value={f.email_id}
                                                 checked={selectedFacultyEmail === f.email_id}
                                                 onChange={() => setSelectedFacultyEmail(f.email_id)}
-                                                className="accent-blue-600"
+                                                className="accent-blue-500"
                                             />
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-medium text-gray-800 text-sm">{f.name}</div>
+                                                <div className="font-medium text-white text-sm">{f.name}</div>
                                                 <div className="text-xs text-gray-400">{f.email_id}</div>
                                             </div>
                                             <div className="text-right flex-shrink-0">
-                                                <div className="text-xs text-gray-500">{f.department}</div>
-                                                <div className="text-xs text-gray-400">{f.designation}</div>
+                                                <div className="text-xs text-gray-300">{f.department}</div>
+                                                <div className="text-xs text-gray-500">{f.designation}</div>
                                             </div>
                                         </label>
                                     ))
@@ -377,10 +379,10 @@ const CourseAllocation: React.FC = () => {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="flex justify-end gap-3 p-5 border-t border-gray-200">
+                        <div className="flex justify-end gap-3 p-5 border-t border-gray-800">
                             <button
                                 onClick={() => setModalOpen(false)}
-                                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="px-4 py-2 text-sm text-gray-400 hover:bg-gray-800 rounded-lg transition-colors"
                             >
                                 Cancel
                             </button>
@@ -399,5 +401,6 @@ const CourseAllocation: React.FC = () => {
         </div>
     );
 };
+
 
 export default CourseAllocation;

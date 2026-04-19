@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import { supabase } from '../config/db';
+import { supabase, supabaseAdmin } from '../config/db';
 
 // Create Student (admin only)
 export const createStudent = async (req: Request, res: Response, next: NextFunction) => {
@@ -10,22 +10,22 @@ export const createStudent = async (req: Request, res: Response, next: NextFunct
             res.status(400); throw new Error('All fields are required');
         }
 
-        const { data: exists } = await supabase.from('users').select('id').eq('email', email).single();
+        const { data: exists } = await supabaseAdmin.from('users').select('id').eq('email', email).single();
         if (exists) { res.status(400); throw new Error('Email already registered'); }
 
         const hashed = await bcrypt.hash(password, 10);
 
-        const { data: userRes, error: userErr } = await supabase
+        const { data: userRes, error: userErr } = await supabaseAdmin
             .from('users').insert([{ email, password: hashed, role: 'student' }]).select().single();
         if (userErr) throw userErr;
 
-        const { data: studentRes, error: studentErr } = await supabase
+        const { data: studentRes, error: studentErr } = await supabaseAdmin
             .from('students')
             .insert([{ student_id, name, email_id: email, department, semester: Number(semester), section: section || 'A' }])
             .select().single();
         if (studentErr) throw studentErr;
 
-        await supabase.from('users').update({ profile_id: student_id }).eq('id', userRes.id);
+        await supabaseAdmin.from('users').update({ profile_id: student_id }).eq('id', userRes.id);
 
         res.status(201).json({ message: 'Student created', student: studentRes });
     } catch (error) { next(error); }
@@ -39,22 +39,22 @@ export const createFaculty = async (req: Request, res: Response, next: NextFunct
             res.status(400); throw new Error('All fields are required');
         }
 
-        const { data: exists } = await supabase.from('users').select('id').eq('email', email).single();
+        const { data: exists } = await supabaseAdmin.from('users').select('id').eq('email', email).single();
         if (exists) { res.status(400); throw new Error('Email already registered'); }
 
         const hashed = await bcrypt.hash(password, 10);
 
-        const { data: userRes, error: userErr } = await supabase
+        const { data: userRes, error: userErr } = await supabaseAdmin
             .from('users').insert([{ email, password: hashed, role: 'faculty' }]).select().single();
         if (userErr) throw userErr;
 
-        const { data: facultyRes, error: facultyErr } = await supabase
+        const { data: facultyRes, error: facultyErr } = await supabaseAdmin
             .from('faculty')
             .insert([{ user_id: String(userRes.id), email_id: email, name, department, designation }])
             .select().single();
         if (facultyErr) throw facultyErr;
 
-        await supabase.from('users').update({ profile_id: email }).eq('id', userRes.id);
+        await supabaseAdmin.from('users').update({ profile_id: email }).eq('id', userRes.id);
 
         res.status(201).json({ message: 'Faculty created', faculty: facultyRes });
     } catch (error) { next(error); }
@@ -63,7 +63,7 @@ export const createFaculty = async (req: Request, res: Response, next: NextFunct
 // Get all students
 export const getStudents = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { data, error } = await supabase.from('students').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabaseAdmin.from('students').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         res.status(200).json(data);
     } catch (error) { next(error); }
@@ -72,7 +72,7 @@ export const getStudents = async (req: Request, res: Response, next: NextFunctio
 // Get all faculty
 export const getFaculty = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { data, error } = await supabase.from('faculty').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabaseAdmin.from('faculty').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         res.status(200).json(data);
     } catch (error) { next(error); }
@@ -82,7 +82,7 @@ export const getFaculty = async (req: Request, res: Response, next: NextFunction
 export const createCourse = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, code, description, credits, email_id, is_elective, max_seats, elective_semester } = req.body;
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('courses')
             .insert([{ name, code, description, credits, email_id: email_id || null, is_elective: is_elective || false, max_seats: max_seats || 30, elective_semester: elective_semester || null }])
             .select()
@@ -98,14 +98,14 @@ export const createCourse = async (req: Request, res: Response, next: NextFuncti
 // Get all courses (with faculty info)
 export const getCourses = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { data: courses, error: coursesError } = await supabase
+        const { data: courses, error: coursesError } = await supabaseAdmin
             .from('courses')
             .select('*')
             .order('created_at', { ascending: false });
 
         if (coursesError) throw coursesError;
 
-        const { data: facultyData, error: facultyError } = await supabase
+        const { data: facultyData, error: facultyError } = await supabaseAdmin
             .from('faculty')
             .select('name, email_id, department, designation');
 
@@ -130,6 +130,7 @@ export const getCourses = async (req: Request, res: Response, next: NextFunction
         next(error);
     }
 };
+
 
 // Unassign Faculty from Course
 export const unassignFaculty = async (req: Request, res: Response, next: NextFunction) => {

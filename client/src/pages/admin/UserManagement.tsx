@@ -41,7 +41,7 @@ const UserManagement: React.FC = () => {
             await api.post('/admin/students', sForm);
             setMsg({ type: 'success', text: 'Student account created successfully.' });
             setSForm({ name: '', email: '', password: '', student_id: '', department: 'CSE', semester: '1', section: 'A' });
-            fetchList();
+            if (showList) fetchList();
         } catch (err: any) {
             setMsg({ type: 'error', text: err?.response?.data?.message || 'Failed to create student.' });
         } finally { setLoading(false); }
@@ -54,42 +54,42 @@ const UserManagement: React.FC = () => {
             await api.post('/admin/faculty', fForm);
             setMsg({ type: 'success', text: 'Faculty account created successfully.' });
             setFFform({ name: '', email: '', password: '', department: 'CSE', designation: 'Assistant Professor' });
-            fetchList();
+            if (showList) fetchList();
         } catch (err: any) {
             setMsg({ type: 'error', text: err?.response?.data?.message || 'Failed to create faculty.' });
         } finally { setLoading(false); }
     };
 
-    const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm';
-    const labelCls = 'block text-sm font-medium text-gray-700 mb-1';
+    const inputCls = 'w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all text-white placeholder-gray-500 outline-none';
+    const labelCls = 'block text-sm font-medium text-gray-400 mb-1';
 
     return (
-        <div className="max-w-3xl mx-auto p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <UserPlus className="w-6 h-6 text-blue-600" /> User Management
+        <div className="max-w-4xl mx-auto p-6">
+            <h1 className="text-3xl font-bold text-white mb-8 flex items-center gap-2">
+                <UserPlus className="w-8 h-8 text-blue-400" /> User Management
             </h1>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-6">
+            <div className="flex gap-2 mb-8 bg-gray-900/30 p-1 rounded-xl w-fit border border-gray-800">
                 {(['student', 'faculty'] as Tab[]).map((t) => (
                     <button key={t} onClick={() => { setTab(t); setMsg(null); }}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${tab === t ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                        className={`px-6 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${tab === t ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
                         {t}
                     </button>
                 ))}
             </div>
 
             {msg && (
-                <div className={`flex items-center gap-2 p-3 rounded-lg mb-4 text-sm ${msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                    {msg.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                <div className={`flex items-center gap-2 p-4 rounded-xl mb-6 text-sm border animate-in fade-in slide-in-from-top-2 duration-300 ${msg.type === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                    {msg.type === 'success' ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
                     {msg.text}
                 </div>
             )}
 
             {/* Student Form */}
             {tab === 'student' && (
-                <form onSubmit={handleStudentSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleStudentSubmit} className="glass-effect rounded-2xl border border-gray-800 p-8 space-y-6 shadow-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div><label className={labelCls}>Full Name</label>
                             <input className={inputCls} required value={sForm.name} onChange={e => setSForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Rahul Sharma" /></div>
                         <div><label className={labelCls}>Roll Number / Student ID</label>
@@ -100,20 +100,22 @@ const UserManagement: React.FC = () => {
                             <input className={inputCls} type="password" required value={sForm.password} onChange={e => setSForm(p => ({ ...p, password: e.target.value }))} placeholder="Set initial password" /></div>
                         <div><label className={labelCls}>Department</label>
                             <select className={inputCls} value={sForm.department} onChange={e => setSForm(p => ({ ...p, department: e.target.value }))}>
-                                {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
+                                {DEPARTMENTS.map(d => <option key={d} className="bg-gray-900">{d}</option>)}
                             </select></div>
                         <div><label className={labelCls}>Semester</label>
                             <select className={inputCls} value={sForm.semester} onChange={e => setSForm(p => ({ ...p, semester: e.target.value }))}>
-                                {[1,2,3,4,5,6,7,8].map(s => <option key={s}>{s}</option>)}
+                                {[1,2,3,4,5,6,7,8].map(s => <option key={s} className="bg-gray-900">{s}</option>)}
                             </select></div>
-                        <div><label className={labelCls}>Section</label>
+                        <div className="md:col-span-2">
+                            <label className={labelCls}>Section</label>
                             <select className={inputCls} value={sForm.section} onChange={e => setSForm(p => ({ ...p, section: e.target.value }))}>
-                                {SECTIONS.map(s => <option key={s}>{s}</option>)}
-                            </select></div>
+                                {SECTIONS.map(s => <option key={s} className="bg-gray-900">{s}</option>)}
+                            </select>
+                        </div>
                     </div>
                     <button type="submit" disabled={loading}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-60">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
                         Create Student Account
                     </button>
                 </form>
@@ -121,8 +123,8 @@ const UserManagement: React.FC = () => {
 
             {/* Faculty Form */}
             {tab === 'faculty' && (
-                <form onSubmit={handleFacultySubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleFacultySubmit} className="glass-effect rounded-2xl border border-gray-800 p-8 space-y-6 shadow-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div><label className={labelCls}>Full Name</label>
                             <input className={inputCls} required value={fForm.name} onChange={e => setFFform(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Dr. Priya Singh" /></div>
                         <div><label className={labelCls}>Email</label>
@@ -131,70 +133,85 @@ const UserManagement: React.FC = () => {
                             <input className={inputCls} type="password" required value={fForm.password} onChange={e => setFFform(p => ({ ...p, password: e.target.value }))} placeholder="Set initial password" /></div>
                         <div><label className={labelCls}>Department</label>
                             <select className={inputCls} value={fForm.department} onChange={e => setFFform(p => ({ ...p, department: e.target.value }))}>
-                                {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
+                                {DEPARTMENTS.map(d => <option key={d} className="bg-gray-900">{d}</option>)}
                             </select></div>
-                        <div><label className={labelCls}>Designation</label>
+                        <div className="md:col-span-2">
+                            <label className={labelCls}>Designation</label>
                             <select className={inputCls} value={fForm.designation} onChange={e => setFFform(p => ({ ...p, designation: e.target.value }))}>
-                                {DESIGNATIONS.map(d => <option key={d}>{d}</option>)}
-                            </select></div>
+                                {DESIGNATIONS.map(d => <option key={d} className="bg-gray-900">{d}</option>)}
+                            </select>
+                        </div>
                     </div>
                     <button type="submit" disabled={loading}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-60">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
                         Create Faculty Account
                     </button>
                 </form>
             )}
 
             {/* Existing users list */}
-            <button onClick={() => setShowList(p => !p)}
-                className="mt-6 flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
-                <Users className="w-4 h-4" />
-                {showList ? 'Hide' : 'Show'} existing {tab}s
-                {showList ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
+            <div className="mt-12">
+                <button onClick={() => setShowList(p => !p)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900/50 text-sm text-gray-400 hover:text-white border border-gray-800 transition-all">
+                    <Users className="w-4 h-4" />
+                    {showList ? 'Hide' : 'Show'} existing {tab}s
+                    {showList ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
 
-            {showList && tab === 'student' && (
-                <div className="mt-3 bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600"><tr>
-                            <th className="px-4 py-2 text-left">Name</th>
-                            <th className="px-4 py-2 text-left">Roll No</th>
-                            <th className="px-4 py-2 text-left">Dept</th>
-                            <th className="px-4 py-2 text-left">Sem</th>
-                        </tr></thead>
-                        <tbody>{students.map(s => (
-                            <tr key={s.id} className="border-t border-gray-100">
-                                <td className="px-4 py-2">{s.name}</td>
-                                <td className="px-4 py-2 font-mono text-xs">{s.student_id}</td>
-                                <td className="px-4 py-2">{s.department}</td>
-                                <td className="px-4 py-2">{s.semester}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
-
-            {showList && tab === 'faculty' && (
-                <div className="mt-3 bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600"><tr>
-                            <th className="px-4 py-2 text-left">Name</th>
-                            <th className="px-4 py-2 text-left">Email</th>
-                            <th className="px-4 py-2 text-left">Dept</th>
-                            <th className="px-4 py-2 text-left">Designation</th>
-                        </tr></thead>
-                        <tbody>{faculty.map(f => (
-                            <tr key={f.id} className="border-t border-gray-100">
-                                <td className="px-4 py-2">{f.name}</td>
-                                <td className="px-4 py-2 text-xs">{f.email_id}</td>
-                                <td className="px-4 py-2">{f.department}</td>
-                                <td className="px-4 py-2">{f.designation}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+                {showList && (
+                    <div className="mt-4 glass-effect rounded-2xl border border-gray-800 overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-gray-900/80 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left">Name</th>
+                                        {tab === 'student' ? (
+                                            <>
+                                                <th className="px-6 py-4 text-left">Roll No</th>
+                                                <th className="px-6 py-4 text-left">Dept</th>
+                                                <th className="px-6 py-4 text-left">Sem</th>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <th className="px-6 py-4 text-left">Email</th>
+                                                <th className="px-6 py-4 text-left">Dept</th>
+                                                <th className="px-6 py-4 text-left">Designation</th>
+                                            </>
+                                        )}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800">
+                                    {tab === 'student' ? (
+                                        students.map(s => (
+                                            <tr key={s.id} className="hover:bg-gray-800/30 transition-colors">
+                                                <td className="px-6 py-4 text-white font-medium">{s.name}</td>
+                                                <td className="px-6 py-4 font-mono text-xs text-blue-400 font-bold">{s.student_id}</td>
+                                                <td className="px-6 py-4 text-gray-400">{s.department}</td>
+                                                <td className="px-6 py-4 text-gray-400">{s.semester}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        faculty.map(f => (
+                                            <tr key={f.id} className="hover:bg-gray-800/30 transition-colors">
+                                                <td className="px-6 py-4 text-white font-medium">{f.name}</td>
+                                                <td className="px-6 py-4 text-xs text-blue-400 font-bold">{f.email_id}</td>
+                                                <td className="px-6 py-4 text-gray-400">{f.department}</td>
+                                                <td className="px-6 py-4 text-gray-400 font-medium">{f.designation}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                    {(tab === 'student' ? students : faculty).length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-gray-600 italic">No records found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

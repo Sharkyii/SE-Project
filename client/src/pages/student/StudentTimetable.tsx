@@ -99,30 +99,34 @@ const StudentTimetable = () => {
             </div>
 
             {/* Timetable Grid */}
-            <div className="overflow-x-auto bg-white rounded-lg shadow">
+            <div className="overflow-x-auto bg-[#0f172a] rounded-lg border border-slate-800 shadow-xl">
                 <table className="w-full border-collapse">
                     <thead>
                         <tr>
-                            <th className="p-3 border bg-gray-50 text-left w-20">Time</th>
+                            {/* 2. Headers: Changed bg-gray-50 to dark slate to make white text visible */}
+                            <th className="p-3 border border-slate-800 bg-slate-900 text-left w-20 text-gray-300 font-semibold">Time</th>
                             {DAYS.map(day => (
-                                <th key={day} className="p-3 border bg-gray-50 text-center w-1/5">{day}</th>
+                                <th key={day} className="p-3 border border-slate-800 bg-slate-900 text-center w-1/5 text-gray-300 font-semibold">{day}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {TIME_SLOTS.map(time => (
                             <tr key={time}>
-                                <td className="p-3 border font-medium text-gray-600 bg-gray-50">{time}</td>
+                                {/* 3. Time Sidebar: Made dark with light-gray text */}
+                                <td className="p-3 border border-slate-800 font-medium text-gray-300 bg-slate-900/50">{time}</td>
                                 {DAYS.map(day => {
                                     const entry = getEntryForSlot(day, time);
                                     return (
-                                        <td key={`${day}-${time}`} className="p-1 border h-24 align-top hover:bg-gray-50 transition-colors">
+                                        /* 4. Hover effect: Fixed the "white block" by changing hover to slate-800 */
+                                        <td key={`${day}-${time}`} className="p-1 border border-slate-800 h-24 align-top hover:bg-slate-800/40 transition-colors">
                                             {entry ? (
-                                                <div className="bg-purple-50 p-2 rounded-md h-full text-sm border-l-4 border-purple-500">
-                                                    <div className="font-bold text-purple-900">{entry.courses?.code}</div>
-                                                    <div className="text-purple-800">{entry.courses?.name}</div>
-                                                    <div className="text-xs text-purple-600 mt-1">{entry.room_no}</div>
-                                                    <div className="text-xs text-gray-500">{entry.faculty?.name}</div>
+                                                /* 5. Purple Card: Swapped light purple for a sleek "Glow" effect */
+                                                <div className="bg-purple-900/20 p-2 rounded-md h-full text-sm border-l-4 border-purple-500 shadow-sm">
+                                                    <div className="font-bold text-purple-400">{entry.courses?.code}</div>
+                                                    <div className="text-purple-100">{entry.courses?.name}</div>
+                                                    <div className="text-xs text-purple-300/80 mt-1">{entry.room_no}</div>
+                                                    <div className="text-xs text-gray-400 italic">{entry.faculty?.name}</div>
                                                 </div>
                                             ) : null}
                                         </td>
