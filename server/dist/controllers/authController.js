@@ -28,53 +28,65 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const env_1 = require("../config/env");
 const db_1 = require("../config/db");
-const generateToken = (id, role) => {
-    return jsonwebtoken_1.default.sign({ id, role }, env_1.env.JWT_SECRET, {
+const generateToken = (id, role, email) => {
+    return jsonwebtoken_1.default.sign({ id, role, email }, env_1.env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
 const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const client = yield db_1.pool.connect();
     try {
         const _a = req.body, { email, password, role, name } = _a, profileData = __rest(_a, ["email", "password", "role", "name"]);
-        const userExists = yield client.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userExists.rows.length > 0) {
+        const { data: userExists } = yield db_1.supabase.from('users').select('*').eq('email', email).single();
+        if (userExists) {
             res.status(400);
             throw new Error('User already exists');
         }
         const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
-        yield client.query('BEGIN');
-        const userRes = yield client.query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING id', [email, hashedPassword, role]);
-        const userId = userRes.rows[0].id;
+        // Supabase SDK doesn't support basic transactions across tables directly without RPC,
+        // so we do sequential inserts.
+        const { data: userRes, error: userError } = yield db_1.supabase
+            .from('users')
+            .insert([{ email, password: hashedPassword, role }])
+            .select()
+            .single();
+        if (userError)
+            throw userError;
+        const userId = userRes.id;
         if (role === 'student') {
             const { rollNumber, department, semester } = profileData;
-            const studentRes = yield client.query('INSERT INTO students (user_id, name, roll_number, department, semester) VALUES ($1, $2, $3, $4, $5) RETURNING id', [userId, name, rollNumber, department, semester || 1]);
-            yield client.query('UPDATE users SET profile_id = $1 WHERE id = $2', [studentRes.rows[0].id, userId]);
+            const { data: studentRes, error: studentError } = yield db_1.supabase
+                .from('students')
+                .insert([{ user_id: userId, name, roll_number: rollNumber, department, semester: semester || 1 }])
+                .select()
+                .single();
+            if (studentError)
+                throw studentError;
+            yield db_1.supabase.from('users').update({ profile_id: studentRes.id }).eq('id', userId);
         }
         else if (role === 'faculty') {
             const { department, designation } = profileData;
-            const facultyRes = yield client.query('INSERT INTO faculty (user_id, name, department, designation) VALUES ($1, $2, $3, $4) RETURNING id', [userId, name, department, designation]);
-            yield client.query('UPDATE users SET profile_id = $1 WHERE id = $2', [facultyRes.rows[0].id, userId]);
+            const { data: facultyRes, error: facultyError } = yield db_1.supabase
+                .from('faculty')
+                .insert([{ user_id: userId, name, department, designation }])
+                .select()
+                .single();
+            if (facultyError)
+                throw facultyError;
+            yield db_1.supabase.from('users').update({ profile_id: facultyRes.id }).eq('id', userId);
         }
-        yield client.query('COMMIT');
         res.status(201).json({ message: 'User registered successfully' });
     }
     catch (error) {
-        yield client.query('ROLLBACK');
         next(error);
-    }
-    finally {
-        client.release();
     }
 });
 exports.register = register;
 const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
-        const result = yield db_1.pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        const user = result.rows[0];
+        const { data: user, error } = yield db_1.supabase.from('users').select('*').eq('email', email).single();
         if (user && (yield bcryptjs_1.default.compare(password, user.password))) {
-            const token = generateToken(user.id, user.role);
+            const token = generateToken(user.id, user.role, user.email);
             res.cookie('jwt', token, {
                 httpOnly: true,
                 secure: env_1.env.NODE_ENV !== 'development',
@@ -103,8 +115,11 @@ const logout = (req, res) => {
 exports.logout = logout;
 const getMe = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield db_1.pool.query('SELECT id, email, role, profile_id FROM users WHERE id = $1', [req.user.id]);
-        const user = result.rows[0];
+        const { data: user, error } = yield db_1.supabase
+            .from('users')
+            .select('id, email, role, profile_id')
+            .eq('id', req.user.id)
+            .single();
         if (!user) {
             res.status(404);
             throw new Error('User not found');

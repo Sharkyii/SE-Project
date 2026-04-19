@@ -34,7 +34,12 @@ export const Auth: React.FC = () => {
                 { id: data.id, email: data.email, role: data.role, name: data.email.split('@')[0] },
                 'cookie-auth'
             );
-            navigate('/dashboard');
+            
+            // Redirect based on role
+            const redirectPath = data.role === 'admin' ? '/admin/dashboard' 
+                : data.role === 'faculty' ? '/faculty/dashboard' 
+                : '/student/dashboard';
+            navigate(redirectPath);
         } catch (err: any) {
             setError(err.message || 'Authentication failed.');
         } finally {

@@ -15,6 +15,10 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const faculty_routes_1 = __importDefault(require("./routes/faculty.routes"));
 const student_routes_1 = __importDefault(require("./routes/student.routes"));
+const fee_routes_1 = __importDefault(require("./routes/fee.routes"));
+const enrollment_routes_1 = __importDefault(require("./routes/enrollment.routes"));
+const exam_routes_1 = __importDefault(require("./routes/exam.routes"));
+const chatbot_1 = __importDefault(require("./routes/chatbot"));
 const app = (0, express_1.default)();
 // Middlewares
 app.use(express_1.default.json());
@@ -31,6 +35,10 @@ app.use('/api/auth', auth_routes_1.default);
 app.use('/api/admin', admin_routes_1.default);
 app.use('/api/faculty', faculty_routes_1.default);
 app.use('/api/student', student_routes_1.default);
+app.use('/api/fees', fee_routes_1.default);
+app.use('/api/enrollments', enrollment_routes_1.default);
+app.use('/api/exams', exam_routes_1.default);
+app.use('/api/chatbot', chatbot_1.default);
 // Health Check
 app.get('/', (req, res) => {
     res.send('Academic ERP API is running...');

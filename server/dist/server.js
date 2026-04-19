@@ -12,9 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dns_1 = __importDefault(require("dns"));
 const app_1 = __importDefault(require("./app"));
 const db_1 = require("./config/db");
 const env_1 = require("./config/env");
+dns_1.default.setDefaultResultOrder('verbatim');
 const PORT = env_1.env.PORT || 5000;
 // Connect to Database and start server
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
