@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useStore } from '../../app/store';
 import { Calendar } from 'lucide-react';
 
@@ -44,9 +44,8 @@ const FacultyTimetable = () => {
                 params.semester = semester;
             }
 
-            const res = await axios.get('http://localhost:5000/api/admin/timetable', {
-                params,
-                headers: { Authorization: `Bearer ${token}` }
+            const res = await api.get('/faculty/timetable', {
+                params
             });
             setTimetable(res.data);
         } catch (error) {

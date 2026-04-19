@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useStore } from '../../app/store';
 import { Calendar, Save, Plus } from 'lucide-react';
 
@@ -41,9 +41,8 @@ const TimetableManager = () => {
     const fetchTimetable = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/admin/timetable', {
-                params: { type: 'institute', department, semester, section },
-                headers: { Authorization: `Bearer ${token}` }
+            const res = await api.get('/admin/timetable', {
+                params: { type: 'institute', department, semester, section }
             });
             setTimetable(res.data);
         } catch (error) {
@@ -73,7 +72,7 @@ const TimetableManager = () => {
         const endTime = `${endHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
         try {
-            await axios.post('http://localhost:5000/api/admin/timetable', {
+            await api.post('/admin/timetable', {
                 ...formData,
                 day: selectedSlot.day,
                 start_time: selectedSlot.time,
@@ -81,8 +80,6 @@ const TimetableManager = () => {
                 semester,
                 department,
                 section
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
 
             setMessage({ type: 'success', text: 'Class assigned successfully!' });
