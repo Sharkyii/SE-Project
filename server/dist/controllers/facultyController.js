@@ -9,21 +9,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEnrolledStudents = exports.getMyCourses = exports.getFacultyGradeReports = exports.getFacultyTimetable = exports.applyLeave = exports.postQuiz = exports.uploadGrades = exports.getAttendanceByDate = exports.markAttendance = void 0;
+exports.markFacultyNotificationRead = exports.getFacultyNotifications = exports.getEnrolledStudents = exports.getMyCourses = exports.getFacultyGradeReports = exports.getFacultyTimetable = exports.getMyLeaves = exports.applyLeave = exports.postQuiz = exports.uploadGrades = exports.getAttendanceByDate = exports.markAttendance = void 0;
 const db_1 = require("../config/db");
 // Mark Attendance (Bulk)
 const markAttendance = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { courseId, date, records } = req.body;
         // Verify faculty owns course
-        const { data: course } = yield db_1.supabase
+        const { data: course } = yield db_1.supabaseAdmin
             .from('courses').select('email_id').eq('code', courseId).single();
         if (!course || course.email_id !== req.user.email) {
             res.status(403);
             throw new Error('Not authorized for this course');
         }
         // 1. Delete existing records for course & date
-        yield db_1.supabase
+        yield db_1.supabaseAdmin
             .from('attendance')
             .delete()
             .eq('course_id', courseId)
@@ -36,7 +36,7 @@ const markAttendance = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 date,
                 status: r.status
             }));
-            const { error: insertError } = yield db_1.supabase
+            const { error: insertError } = yield db_1.supabaseAdmin
                 .from('attendance')
                 .insert(insertData);
             if (insertError)
@@ -57,7 +57,7 @@ const getAttendanceByDate = (req, res, next) => __awaiter(void 0, void 0, void 0
             res.status(400);
             throw new Error('Course ID and Date are required');
         }
-        const { data, error } = yield db_1.supabase
+        const { data, error } = yield db_1.supabaseAdmin
             .from('attendance')
             .select('*')
             .eq('course_id', courseId)
@@ -76,7 +76,7 @@ const uploadGrades = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     try {
         const { studentEmail, courseId, examType, score } = req.body;
         // Verify that the currently logged-in faculty is assigned to teach this course
-        const { data: course, error: courseError } = yield db_1.supabase
+        const { data: course, error: courseError } = yield db_1.supabaseAdmin
             .from('courses')
             .select('email_id')
             .eq('code', courseId)
@@ -90,7 +90,7 @@ const uploadGrades = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             throw new Error('You are not authorized to upload grades for this course.');
         }
         // Find student ID using email
-        const { data: student, error: studentError } = yield db_1.supabase
+        const { data: student, error: studentError } = yield db_1.supabaseAdmin
             .from('students')
             .select('student_id')
             .eq('email_id', studentEmail)
@@ -99,7 +99,7 @@ const uploadGrades = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             res.status(404);
             throw new Error('Student not found with that email ID');
         }
-        const { data, error } = yield db_1.supabase
+        const { data, error } = yield db_1.supabaseAdmin
             .from('grades')
             .insert([{ student_id: student.student_id, course_id: courseId, exam_type: examType, score, status: 'pending' }])
             .select()
@@ -118,7 +118,7 @@ const postQuiz = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { courseId, title, description, dueDate, facultyId } = req.body;
         // Insert Quiz
-        const { data: quizData, error: quizError } = yield db_1.supabase
+        const { data: quizData, error: quizError } = yield db_1.supabaseAdmin
             .from('quizzes')
             .insert([{ course_id: courseId, faculty_id: facultyId, title, description, due_date: dueDate }])
             .select()
@@ -126,7 +126,7 @@ const postQuiz = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         if (quizError)
             throw quizError;
         // Fetch enrolled students
-        const { data: enrollments, error: enrollError } = yield db_1.supabase
+        const { data: enrollments, error: enrollError } = yield db_1.supabaseAdmin
             .from('enrollments')
             .select('student_id')
             .eq('course_id', courseId);
@@ -137,7 +137,7 @@ const postQuiz = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                 student_id: e.student_id,
                 message: `New quiz posted for ${courseId}: ${title}. Due on ${dueDate}`
             }));
-            const { error: notifError } = yield db_1.supabase
+            const { error: notifError } = yield db_1.supabaseAdmin
                 .from('notifications')
                 .insert(notifications);
             if (notifError)
@@ -150,54 +150,114 @@ const postQuiz = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.postQuiz = postQuiz;
-// Apply Leave (Placeholder)
-/*const applyLeave = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+// Apply Leave
+const applyLeave = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { reason, startDate, endDate } = req.body;
-        // Logic to store leave application
-        res.status(201).json({ message: 'Leave application submitted' });
+        const facultyEmail = req.user.email;
+        console.log(`Apply Leave Attempt: facultyEmail=${facultyEmail}, startDate=${startDate}, endDate=${endDate}`);
+        if (!reason || !startDate || !endDate) {
+            res.status(400);
+            throw new Error('Reason, Start Date, and End Date are required');
+        }
+        // 1. Insert Leave Record using Admin client to bypass RLS
+        const { data: leaveData, error: leaveError } = yield db_1.supabaseAdmin
+            .from('faculty_leaves')
+            .insert([{ faculty_id: facultyEmail, reason, start_date: startDate, end_date: endDate, status: 'pending' }])
+            .select()
+            .single();
+        if (leaveError) {
+            console.error('Error inserting faculty leave:', leaveError);
+            res.status(500);
+            throw new Error(`Database error: ${leaveError.message}. Ensure faculty exists with email ${facultyEmail}`);
+        }
+        console.log('Leave record inserted successfully:', leaveData.id);
+        // 2. Fetch all students enrolled in this faculty's courses
+        const { data: myCourses, error: coursesError } = yield db_1.supabaseAdmin
+            .from('courses')
+            .select('code')
+            .eq('email_id', facultyEmail);
+        if (coursesError)
+            console.error('Error fetching faculty courses:', coursesError);
+        if (myCourses && myCourses.length > 0) {
+            const courseCodes = myCourses.map(c => c.code);
+            const { data: enrollments } = yield db_1.supabaseAdmin
+                .from('enrollments')
+                .select('student_id')
+                .in('course_id', courseCodes);
+            const { data: electiveEnrollments } = yield db_1.supabaseAdmin
+                .from('elective_enrollments')
+                .select('student_id')
+                .in('course_id', courseCodes);
+            const studentIds = Array.from(new Set([
+                ...(enrollments || []).map(e => e.student_id),
+                ...(electiveEnrollments || []).map(e => e.student_id)
+            ]));
+            if (studentIds.length > 0) {
+                const { data: facultyProfile } = yield db_1.supabaseAdmin
+                    .from('faculty')
+                    .select('name')
+                    .eq('email_id', facultyEmail)
+                    .single();
+                const facultyName = (facultyProfile === null || facultyProfile === void 0 ? void 0 : facultyProfile.name) || 'A faculty member';
+                const notifications = studentIds.map(sid => ({
+                    student_id: sid,
+                    message: `Important: ${facultyName} is on leave from ${startDate} to ${endDate}. Reason: ${reason}`
+                }));
+                const { error: notifError } = yield db_1.supabaseAdmin.from('notifications').insert(notifications);
+                if (notifError)
+                    console.error('Error inserting notifications:', notifError);
+                else
+                    console.log(`Notified ${studentIds.length} students about leave.`);
+            }
+        }
+        res.status(201).json({ message: 'Leave application submitted and students notified', leave: leaveData });
     }
     catch (error) {
         next(error);
     }
 });
 exports.applyLeave = applyLeave;
-*/
-export const applyLeave = async (req, res) => {
+// Get My Leaves
+const getMyLeaves = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-      res.json({ message: "Leave applied" });
-    } catch (err) {
-      res.status(500).json({ message: "Error applying leave" });
+        const { data, error } = yield db_1.supabaseAdmin
+            .from('faculty_leaves')
+            .select('*')
+            .eq('faculty_id', req.user.email)
+            .order('created_at', { ascending: false });
+        if (error)
+            throw error;
+        res.status(200).json(data);
     }
-  };
-  
-  export const getMyLeaves = async (req, res) => {
-    try {
-      res.json({ message: "Fetched leaves" });
-    } catch (err) {
-      res.status(500).json({ message: "Error fetching leaves" });
+    catch (error) {
+        next(error);
     }
-  };
+});
+exports.getMyLeaves = getMyLeaves;
 // Get Faculty Timetable
 const getFacultyTimetable = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Assuming the middleware populates user in req.user, and it has email or id
-        // For now, let's assume we pass facultyId in query or params or body if not in auth
-        // But better is to trust the token. Let's assume req.user.email is available if we extend Request
-        // For now, let's accept it as a query param for flexibility in this "personal" view
-        const { facultyId } = req.query;
-        if (!facultyId) {
-            res.status(400);
-            throw new Error('Faculty ID is required');
-        }
-        const { data, error } = yield db_1.supabase
+        const { type, userId, department, semester } = req.query;
+        let query = db_1.supabaseAdmin
             .from('timetables')
             .select(`
                 *,
                 courses (name, code),
                 faculty (name)
-            `)
-            .eq('faculty_id', facultyId);
+            `);
+        if (type === 'institute') {
+            if (department)
+                query = query.eq('department', department);
+            if (semester)
+                query = query.eq('semester', semester);
+        }
+        else {
+            // Default to personal
+            const facultyEmail = userId || req.user.email;
+            query = query.eq('faculty_id', facultyEmail);
+        }
+        const { data, error } = yield query;
         if (error)
             throw error;
         res.status(200).json(data);
@@ -216,7 +276,7 @@ const getFacultyGradeReports = (req, res, next) => __awaiter(void 0, void 0, voi
             throw new Error('Faculty ID is required');
         }
         // Fetch courses taught by this faculty
-        const { data: courses, error: courseError } = yield db_1.supabase
+        const { data: courses, error: courseError } = yield db_1.supabaseAdmin
             .from('courses')
             .select('code, name')
             .eq('email_id', facultyId);
@@ -228,7 +288,7 @@ const getFacultyGradeReports = (req, res, next) => __awaiter(void 0, void 0, voi
         }
         const courseCodes = courses.map(c => c.code);
         // Fetch grades for these courses
-        const { data: grades, error: gradesError } = yield db_1.supabase
+        const { data: grades, error: gradesError } = yield db_1.supabaseAdmin
             .from('grades')
             .select('*, courses(name)')
             .in('course_id', courseCodes);
@@ -244,7 +304,7 @@ exports.getFacultyGradeReports = getFacultyGradeReports;
 // Get courses assigned to the logged-in faculty
 const getMyCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { data, error } = yield db_1.supabase
+        const { data, error } = yield db_1.supabaseAdmin
             .from('courses')
             .select('code, name')
             .eq('email_id', req.user.email);
@@ -262,7 +322,7 @@ const getEnrolledStudents = (req, res, next) => __awaiter(void 0, void 0, void 0
     try {
         const { courseId } = req.params;
         // Verify faculty owns course
-        const { data: course } = yield db_1.supabase
+        const { data: course } = yield db_1.supabaseAdmin
             .from('courses')
             .select('email_id')
             .eq('code', courseId)
@@ -271,14 +331,14 @@ const getEnrolledStudents = (req, res, next) => __awaiter(void 0, void 0, void 0
             res.status(403);
             throw new Error('Not authorized to view students for this course');
         }
-        const { data, error } = yield db_1.supabase
+        const { data, error } = yield db_1.supabaseAdmin
             .from('enrollments')
             .select('students(name, email_id, student_id)')
             .eq('course_id', courseId);
         if (error)
             throw error;
         // Also fetch from elective enrollments
-        const { data: electiveData } = yield db_1.supabase
+        const { data: electiveData } = yield db_1.supabaseAdmin
             .from('elective_enrollments')
             .select('students(name, email_id, student_id)')
             .eq('course_id', courseId);
@@ -295,3 +355,55 @@ const getEnrolledStudents = (req, res, next) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.getEnrolledStudents = getEnrolledStudents;
+const getFacultyNotifications = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { data: me, error: meError } = yield db_1.supabaseAdmin
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+        if (meError || !(me === null || me === void 0 ? void 0 : me.profile_id)) {
+            res.status(404);
+            throw new Error('Faculty profile not found');
+        }
+        const { data, error } = yield db_1.supabaseAdmin
+            .from('notifications')
+            .select('*')
+            .eq('profile_id', me.profile_id)
+            .order('created_at', { ascending: false });
+        if (error)
+            throw error;
+        res.status(200).json(data);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getFacultyNotifications = getFacultyNotifications;
+const markFacultyNotificationRead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const { data: me, error: meError } = yield db_1.supabaseAdmin
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+        if (meError || !(me === null || me === void 0 ? void 0 : me.profile_id)) {
+            res.status(404);
+            throw new Error('Faculty profile not found');
+        }
+        const { data, error } = yield db_1.supabaseAdmin
+            .from('notifications')
+            .update({ read_status: true })
+            .eq('id', id)
+            .eq('profile_id', me.profile_id)
+            .select();
+        if (error)
+            throw error;
+        res.status(200).json(data);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.markFacultyNotificationRead = markFacultyNotificationRead;

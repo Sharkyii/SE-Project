@@ -212,10 +212,21 @@ export const getTimetable = async (req: Request, res: Response, next: NextFuncti
 // Get Notifications
 export const getNotifications = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { data: me, error: meError } = await supabase
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+
+        if (meError || !me?.profile_id) {
+            res.status(404);
+            throw new Error('User profile not found');
+        }
+
         const { data, error } = await supabase
             .from('notifications')
             .select('*')
-            .eq('student_id', req.user.profile_id)
+            .eq('profile_id', me.profile_id)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -229,11 +240,22 @@ export const getNotifications = async (req: Request, res: Response, next: NextFu
 export const markNotificationRead = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
+        const { data: me, error: meError } = await supabase
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+
+        if (meError || !me?.profile_id) {
+            res.status(404);
+            throw new Error('User profile not found');
+        }
+
         const { data, error } = await supabase
             .from('notifications')
             .update({ read_status: true })
             .eq('id', id)
-            .eq('student_id', req.user.profile_id)
+            .eq('profile_id', me.profile_id)
             .select();
 
         if (error) throw error;

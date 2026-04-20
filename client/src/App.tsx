@@ -31,6 +31,9 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import FacultyDashboard from './pages/faculty/FacultyDashboard';
 import FacultyLeave from './pages/faculty/FacultyLeave';
 import StudentDashboard from './pages/student/StudentDashboard';
+import PlacementManager from './pages/admin/PlacementManager';
+import PlacementOverview from './pages/faculty/PlacementOverview';
+import StudentPlacements from './pages/student/StudentPlacements';
 
 import TestPage from './pages/TestPage';
 
@@ -89,6 +92,7 @@ function App() {
               <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/admin/reports" element={<GradeApprovals />} />
               <Route path="/admin/attendance" element={<AdminAttendance />} />
+              <Route path="/admin/placements" element={<PlacementManager />} />
             </Route>
 
             {/* Faculty Routes */}
@@ -99,6 +103,7 @@ function App() {
               <Route path="/faculty/quiz" element={<QuizUpload />} />
               <Route path="/faculty/timetable" element={<FacultyTimetable />} />
               <Route path="/faculty/leave" element={<FacultyLeave />} />
+              <Route path="/faculty/placements" element={<PlacementOverview />} />
             </Route>
 
 
@@ -113,6 +118,7 @@ function App() {
               <Route path="/student/exam-timetable" element={<StudentExamTimetable />} />
               <Route path="/student/fees" element={<FeeManagement />} />
               <Route path="/student/attendance" element={<StudentAttendance />} />
+              <Route path="/student/placements" element={<StudentPlacements />} />
               <Route path="/student/feedback" element={<Placeholder title="Feedback" />} />
               <Route path="/student/leaderboard" element={<Placeholder title="Leaderboard" />} />
             </Route>

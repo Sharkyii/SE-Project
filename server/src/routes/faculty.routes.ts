@@ -11,7 +11,9 @@ import {
     getFacultyTimetable, 
     getMyCourses, 
     getEnrolledStudents, 
-    getAttendanceByDate 
+    getAttendanceByDate,
+    getFacultyNotifications,
+    markFacultyNotificationRead
 } from '../controllers/facultyController';
 
 const router = express.Router();
@@ -30,5 +32,7 @@ router.get('/grades/reports', getFacultyGradeReports);
 router.post('/quizzes', postQuiz);
 router.post('/leave', applyLeave);
 router.get('/leave/my', getMyLeaves);
+router.get('/notifications', getFacultyNotifications);
+router.put('/notifications/:id/read', markFacultyNotificationRead);
 
 export default router;
