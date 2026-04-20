@@ -235,118 +235,133 @@ export default function StudentRegistration() {
         .catch(() => {});
     };
     return (
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className={clsx('text-2xl font-bold', {
+      <div className="p-6 max-w-4xl mx-auto space-y-8">
+        <header>
+          <h1 className={clsx('text-3xl font-bold', {
             'text-yellow-400': existingApp.status === 'pending',
             'text-green-400': existingApp.status === 'approved',
             'text-red-400': existingApp.status === 'rejected',
           })}>
             {existingApp.status === 'approved' ? 'Registration Complete' : 'My Registration'}
           </h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-gray-400 mt-1">
             {existingApp.status === 'approved'
               ? 'Your enrollment has been approved by the admin.'
               : 'Track your enrollment application status'}
           </p>
-        </div>
+        </header>
         <ApplicationStatusView app={existingApp} onRefresh={refresh} />
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-blue-400">Student Registration</h1>
-        <p className="text-gray-400 text-sm mt-1">Fill in your details and upload required documents to apply for enrollment</p>
-      </div>
+    <div className="p-6 max-w-4xl mx-auto space-y-8">
+      <header>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+            <FileText className="w-8 h-8 text-blue-400" />
+            Student Registration
+        </h1>
+        <p className="text-gray-400 mt-1">Fill in your details and upload required documents to apply for enrollment</p>
+      </header>
 
-      <form onSubmit={handleSubmit} className="max-w-3xl space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {error && (
-          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 shrink-0" />
             {error}
           </div>
         )}
 
         {/* Personal Information */}
-        <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 space-y-4">
-          <h2 className="text-white font-semibold text-lg">Personal Information</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <section className="glass-effect rounded-2xl border border-gray-800 p-8 space-y-6 shadow-2xl">
+          <h2 className="text-white font-bold text-xl flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+              Personal Information
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Field label="Full Name *" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Enter full name" />
             <div>
-              <label className="block text-gray-400 text-sm mb-1.5">Email Address *</label>
+              <label className="block text-gray-400 text-sm font-medium mb-1.5">Email Address *</label>
               <input type="email" name="email" value={form.email} readOnly
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-400 text-sm cursor-not-allowed" />
+                className="w-full bg-gray-900/30 border border-gray-800 rounded-lg px-3 py-2.5 text-gray-500 text-sm cursor-not-allowed" />
             </div>
             <Field label="Phone Number *" name="phone" value={form.phone} onChange={handleChange} required placeholder="+91 XXXXX XXXXX" />
             <Field label="Date of Birth" name="date_of_birth" type="date" value={form.date_of_birth} onChange={handleChange} />
             <div>
-              <label className="block text-gray-400 text-sm mb-1.5">Gender</label>
+              <label className="block text-gray-400 text-sm font-medium mb-1.5">Gender</label>
               <select name="gender" value={form.gender} onChange={handleChange}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500">
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="" className="bg-gray-900">Select gender</option>
+                <option value="male" className="bg-gray-900">Male</option>
+                <option value="female" className="bg-gray-900">Female</option>
+                <option value="other" className="bg-gray-900">Other</option>
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-gray-400 text-sm mb-1.5">Address</label>
+            <label className="block text-gray-400 text-sm font-medium mb-1.5">Address</label>
             <textarea name="address" value={form.address} onChange={handleChange} rows={2}
               placeholder="Enter your full address"
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none" />
+              className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-500 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all" />
           </div>
         </section>
 
         {/* Academic Information */}
-        <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 space-y-4">
-          <h2 className="text-white font-semibold text-lg">Academic Information</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <section className="glass-effect rounded-2xl border border-gray-800 p-8 space-y-6 shadow-2xl">
+          <h2 className="text-white font-bold text-xl flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+              Academic Information
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
-              <label className="block text-gray-400 text-sm mb-1.5">Department *</label>
+              <label className="block text-gray-400 text-sm font-medium mb-1.5">Department *</label>
               <select name="department" value={form.department} onChange={handleChange} required
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500">
-                <option value="">Select department</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="" className="bg-gray-900">Select department</option>
+                {DEPARTMENTS.map(d => <option key={d} value={d} className="bg-gray-900">{d}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-1.5">Semester *</label>
+              <label className="block text-gray-400 text-sm font-medium mb-1.5">Semester *</label>
               <select name="semester" value={form.semester} onChange={handleChange} required
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500">
-                <option value="">Select semester</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="" className="bg-gray-900">Select semester</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s} className="bg-gray-900">Semester {s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-1.5">Section</label>
+              <label className="block text-gray-400 text-sm font-medium mb-1.5">Section</label>
               <select name="section" value={form.section} onChange={handleChange}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500">
-                {['A', 'B', 'C', 'D'].map(s => <option key={s} value={s}>Section {s}</option>)}
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                {['A', 'B', 'C', 'D'].map(s => <option key={s} value={s} className="bg-gray-900">Section {s}</option>)}
               </select>
             </div>
           </div>
         </section>
 
         {/* Guardian Information */}
-        <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 space-y-4">
-          <h2 className="text-white font-semibold text-lg">Guardian Information</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <section className="glass-effect rounded-2xl border border-gray-800 p-8 space-y-6 shadow-2xl">
+          <h2 className="text-white font-bold text-xl flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+              Guardian Information
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Field label="Guardian Name" name="guardian_name" value={form.guardian_name} onChange={handleChange} placeholder="Parent / Guardian name" />
             <Field label="Guardian Phone" name="guardian_phone" value={form.guardian_phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" />
           </div>
         </section>
 
         {/* Document Upload */}
-        <section className="bg-gray-800 rounded-xl border border-gray-700 p-6 space-y-4">
+        <section className="glass-effect rounded-2xl border border-gray-800 p-8 space-y-6 shadow-2xl">
           <div>
-            <h2 className="text-white font-semibold text-lg">Document Upload</h2>
-            <p className="text-gray-400 text-sm mt-1">Aadhar Card and College ID are mandatory</p>
+            <h2 className="text-white font-bold text-xl flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+                Document Upload
+            </h2>
+            <p className="text-gray-500 text-sm mt-1 uppercase font-bold tracking-widest">Aadhar Card and College ID are mandatory</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {DOC_FIELDS.map(({ field, label, required, hint }) => (
               <DocUploadField key={field} label={label} required={required} hint={hint}
                 file={docs[field] || null} onChange={f => handleDocChange(field, f)} />
@@ -355,11 +370,12 @@ export default function StudentRegistration() {
         </section>
 
         <button type="submit" disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors">
-          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+          className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]">
+          {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <Upload className="w-6 h-6" />}
           {submitting ? 'Submitting Application...' : 'Submit Registration Application'}
         </button>
       </form>
     </div>
   );
 }
+

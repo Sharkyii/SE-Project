@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { Calendar, Save, Plus, RefreshCw, X } from 'lucide-react';
+import { Calendar, Save, Plus, RefreshCw, X, Loader2, AlertCircle } from 'lucide-react';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 const TIME_SLOTS = [
@@ -19,11 +19,23 @@ interface TimetableEntry {
     faculty?: { name: string };
 }
 
+interface CourseOption {
+    name: string;
+    code: string;
+}
+
+interface FacultyOption {
+    name: string;
+    email_id: string;
+}
+
 const TimetableManager = () => {
     const [department, setDepartment] = useState('CSE');
     const [semester, setSemester] = useState(1);
     const [section, setSection] = useState('A');
     const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
+    const [courses, setCourses] = useState<CourseOption[]>([]);
+    const [faculty, setFaculty] = useState<FacultyOption[]>([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -42,7 +54,7 @@ const TimetableManager = () => {
             const res = await api.get('/admin/timetable', {
                 params: { type: 'institute', department, semester, section },
             });
-            setTimetable(res.data);
+            setTimetable(res.data || []);
         } catch (error) {
             console.error('Failed to fetch timetable', error);
         } finally {
@@ -50,8 +62,22 @@ const TimetableManager = () => {
         }
     };
 
+    const fetchOptions = async () => {
+        try {
+            const [courseRes, facultyRes] = await Promise.all([
+                api.get('/admin/courses'),
+                api.get('/admin/faculty')
+            ]);
+            setCourses(courseRes.data || []);
+            setFaculty(facultyRes.data || []);
+        } catch (err) {
+            console.error('Failed to fetch options', err);
+        }
+    };
+
     useEffect(() => {
         fetchTimetable();
+        fetchOptions();
     }, [department, semester, section]);
 
     const handleCellClick = (day: string, time: string) => {
@@ -63,6 +89,10 @@ const TimetableManager = () => {
 
     const handleSave = async () => {
         if (!selectedSlot) return;
+        if (!formData.course_id || !formData.faculty_id || !formData.room_no) {
+            setMessage({ type: 'error', text: 'All fields are required.' });
+            return;
+        }
 
         // Calculate end time (assuming 1 hour slots for now)
         const [hour, minute] = selectedSlot.time.split(':').map(Number);
@@ -92,7 +122,7 @@ const TimetableManager = () => {
     };
 
     const getEntryForSlot = (day: string, time: string) => {
-        return timetable.find(t => t.day === day && t.start_time.startsWith(time)); // Simple check, ideally check ranges
+        return timetable.find(t => t.day === day && t.start_time.startsWith(time));
     };
 
     const inputCls = 'w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all text-white placeholder-gray-500 outline-none';
@@ -146,7 +176,7 @@ const TimetableManager = () => {
                     disabled={loading}
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg shadow-blue-600/20 disabled:opacity-50"
                 >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                     Refresh
                 </button>
             </div>
@@ -183,7 +213,7 @@ const TimetableManager = () => {
                                                             <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                                                             {entry.room_no}
                                                         </div>
-                                                        <div className="text-[10px] text-gray-500 mt-1 truncate">{entry.faculty_id}</div>
+                                                        <div className="text-[10px] text-gray-500 mt-1 truncate">{entry.faculty?.name || entry.faculty_id}</div>
                                                     </div>
                                                 ) : (
                                                     <div className="h-full w-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -215,29 +245,38 @@ const TimetableManager = () => {
                         </div>
 
                         {message && (
-                            <div className={`p-3 mb-6 rounded-lg text-sm border ${message.type === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                            <div className={`p-4 mb-6 rounded-xl text-sm border flex items-center gap-2 ${message.type === 'success' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                {message.type === 'error' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
                                 {message.text}
                             </div>
                         )}
 
                         <div className="space-y-5">
                             <div>
-                                <label className={labelCls}>Course Code</label>
-                                <input
+                                <label className={labelCls}>Course</label>
+                                <select 
                                     className={inputCls}
                                     value={formData.course_id}
                                     onChange={e => setFormData({ ...formData, course_id: e.target.value })}
-                                    placeholder="e.g. CS101"
-                                />
+                                >
+                                    <option value="" className="bg-gray-900">Select Course</option>
+                                    {courses.map(c => (
+                                        <option key={c.code} value={c.code} className="bg-gray-900">{c.code} - {c.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
-                                <label className={labelCls}>Faculty Email</label>
-                                <input
+                                <label className={labelCls}>Faculty</label>
+                                <select 
                                     className={inputCls}
                                     value={formData.faculty_id}
                                     onChange={e => setFormData({ ...formData, faculty_id: e.target.value })}
-                                    placeholder="faculty@college.edu"
-                                />
+                                >
+                                    <option value="" className="bg-gray-900">Select Faculty</option>
+                                    {faculty.map(f => (
+                                        <option key={f.email_id} value={f.email_id} className="bg-gray-900">{f.name} ({f.email_id})</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className={labelCls}>Room No</label>

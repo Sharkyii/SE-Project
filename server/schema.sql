@@ -196,6 +196,19 @@ CREATE TABLE IF NOT EXISTS notifications (
     read_status BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+-- 14. Faculty Leaves Table
+CREATE TABLE IF NOT EXISTS faculty_leaves (
+    id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    faculty_id  TEXT NOT NULL, -- Refers to Faculty email_id
+    reason      TEXT NOT NULL,
+    start_date  DATE NOT NULL,
+    end_date    DATE NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (faculty_id) REFERENCES faculty(email_id) ON DELETE CASCADE
+);
 -- 12. Enrollment Applications Table
 CREATE TABLE IF NOT EXISTS enrollment_applications (
     id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

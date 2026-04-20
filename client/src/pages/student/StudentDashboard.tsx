@@ -11,27 +11,33 @@ export const StudentDashboard: React.FC = () => {
     cgpa: 0,
     pendingFees: 0,
   });
-  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loadingNotifs, setLoadingNotifs] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchNotifications();
   }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get('/student/notifications');
+      setNotifications(res.data?.filter((n: any) => !n.read_status).slice(0, 3) || []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoadingNotifs(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
       // Fetch enrolled courses
-      const enrollmentRes = await axios.get('http://localhost:5000/api/enrollments/student', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
+      const enrollmentRes = await api.get('/enrollments/student');
       
       setStats(prev => ({
         ...prev,
         enrolledCourses: enrollmentRes.data?.enrollments?.length || 0,
-      }));
-
-      // Mock data for other stats (replace with actual API calls)
-      setStats(prev => ({
-        ...prev,
         attendance: 85,
         cgpa: 8.5,
         pendingFees: 0,
@@ -42,13 +48,44 @@ export const StudentDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold text-white">Welcome back, {user?.name}!</h1>
-        <p className="text-gray-400 mt-2">Here's your academic overview</p>
+    <div className="space-y-8">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Welcome back, {user?.name}!</h1>
+          <p className="text-gray-400 mt-2 font-medium">Here's your academic overview for today.</p>
+        </div>
+        <div className="hidden md:block">
+           <span className="text-xs font-bold text-gray-500 uppercase tracking-widest bg-gray-900/50 px-4 py-2 rounded-full border border-gray-800">
+             {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+           </span>
+        </div>
       </div>
 
+      {/* Alerts Section - Added for Faculty Leave notifications */}
+      {notifications.length > 0 && (
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-2 px-2">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <h2 className="text-sm font-bold text-red-400 uppercase tracking-[0.2em]">Important Alerts</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {notifications.map((n) => (
+              <div key={n.id} className="glass-effect border-l-4 border-l-red-500 p-4 rounded-xl flex items-start gap-4 shadow-xl hover:bg-white/5 transition-colors">
+                <div className="p-2 bg-red-500/10 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-200 font-medium leading-relaxed">{n.message}</p>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase mt-2">{new Date(n.created_at).toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           icon={<BookOpen className="w-8 h-8 text-blue-400" />}
