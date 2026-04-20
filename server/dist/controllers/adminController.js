@@ -23,23 +23,23 @@ const createStudent = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             res.status(400);
             throw new Error('All fields are required');
         }
-        const { data: exists } = yield db_1.supabase.from('users').select('id').eq('email', email).single();
+        const { data: exists } = yield db_1.supabaseAdmin.from('users').select('id').eq('email', email).single();
         if (exists) {
             res.status(400);
             throw new Error('Email already registered');
         }
         const hashed = yield bcryptjs_1.default.hash(password, 10);
-        const { data: userRes, error: userErr } = yield db_1.supabase
+        const { data: userRes, error: userErr } = yield db_1.supabaseAdmin
             .from('users').insert([{ email, password: hashed, role: 'student' }]).select().single();
         if (userErr)
             throw userErr;
-        const { data: studentRes, error: studentErr } = yield db_1.supabase
+        const { data: studentRes, error: studentErr } = yield db_1.supabaseAdmin
             .from('students')
             .insert([{ student_id, name, email_id: email, department, semester: Number(semester), section: section || 'A' }])
             .select().single();
         if (studentErr)
             throw studentErr;
-        yield db_1.supabase.from('users').update({ profile_id: student_id }).eq('id', userRes.id);
+        yield db_1.supabaseAdmin.from('users').update({ profile_id: student_id }).eq('id', userRes.id);
         res.status(201).json({ message: 'Student created', student: studentRes });
     }
     catch (error) {
@@ -55,23 +55,23 @@ const createFaculty = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             res.status(400);
             throw new Error('All fields are required');
         }
-        const { data: exists } = yield db_1.supabase.from('users').select('id').eq('email', email).single();
+        const { data: exists } = yield db_1.supabaseAdmin.from('users').select('id').eq('email', email).single();
         if (exists) {
             res.status(400);
             throw new Error('Email already registered');
         }
         const hashed = yield bcryptjs_1.default.hash(password, 10);
-        const { data: userRes, error: userErr } = yield db_1.supabase
+        const { data: userRes, error: userErr } = yield db_1.supabaseAdmin
             .from('users').insert([{ email, password: hashed, role: 'faculty' }]).select().single();
         if (userErr)
             throw userErr;
-        const { data: facultyRes, error: facultyErr } = yield db_1.supabase
+        const { data: facultyRes, error: facultyErr } = yield db_1.supabaseAdmin
             .from('faculty')
             .insert([{ user_id: String(userRes.id), email_id: email, name, department, designation }])
             .select().single();
         if (facultyErr)
             throw facultyErr;
-        yield db_1.supabase.from('users').update({ profile_id: email }).eq('id', userRes.id);
+        yield db_1.supabaseAdmin.from('users').update({ profile_id: email }).eq('id', userRes.id);
         res.status(201).json({ message: 'Faculty created', faculty: facultyRes });
     }
     catch (error) {
@@ -82,7 +82,7 @@ exports.createFaculty = createFaculty;
 // Get all students
 const getStudents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { data, error } = yield db_1.supabase.from('students').select('*').order('created_at', { ascending: false });
+        const { data, error } = yield db_1.supabaseAdmin.from('students').select('*').order('created_at', { ascending: false });
         if (error)
             throw error;
         res.status(200).json(data);
@@ -95,7 +95,7 @@ exports.getStudents = getStudents;
 // Get all faculty
 const getFaculty = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { data, error } = yield db_1.supabase.from('faculty').select('*').order('created_at', { ascending: false });
+        const { data, error } = yield db_1.supabaseAdmin.from('faculty').select('*').order('created_at', { ascending: false });
         if (error)
             throw error;
         res.status(200).json(data);
@@ -109,7 +109,7 @@ exports.getFaculty = getFaculty;
 const createCourse = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, code, description, credits, email_id, is_elective, max_seats, elective_semester } = req.body;
-        const { data, error } = yield db_1.supabase
+        const { data, error } = yield db_1.supabaseAdmin
             .from('courses')
             .insert([{ name, code, description, credits, email_id: email_id || null, is_elective: is_elective || false, max_seats: max_seats || 30, elective_semester: elective_semester || null }])
             .select()
@@ -126,13 +126,13 @@ exports.createCourse = createCourse;
 // Get all courses (with faculty info)
 const getCourses = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { data: courses, error: coursesError } = yield db_1.supabase
+        const { data: courses, error: coursesError } = yield db_1.supabaseAdmin
             .from('courses')
             .select('*')
             .order('created_at', { ascending: false });
         if (coursesError)
             throw coursesError;
-        const { data: facultyData, error: facultyError } = yield db_1.supabase
+        const { data: facultyData, error: facultyError } = yield db_1.supabaseAdmin
             .from('faculty')
             .select('name, email_id, department, designation');
         if (facultyError)

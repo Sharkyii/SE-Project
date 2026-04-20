@@ -15,6 +15,7 @@ import feeRoutes from './routes/fee.routes';
 import enrollmentRoutes from './routes/enrollment.routes';
 import examRoutes from './routes/exam.routes';
 import chatbotRoutes from './routes/chatbot';
+import placementRoutes from './routes/placement.routes';
 
 const app: Application = express();
 
@@ -38,6 +39,7 @@ app.use('/api/fees', feeRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/placements', placementRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

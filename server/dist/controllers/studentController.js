@@ -231,10 +231,19 @@ exports.getTimetable = getTimetable;
 // Get Notifications
 const getNotifications = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { data: me, error: meError } = yield db_1.supabase
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+        if (meError || !(me === null || me === void 0 ? void 0 : me.profile_id)) {
+            res.status(404);
+            throw new Error('User profile not found');
+        }
         const { data, error } = yield db_1.supabase
             .from('notifications')
             .select('*')
-            .eq('student_id', req.user.profile_id)
+            .eq('profile_id', me.profile_id)
             .order('created_at', { ascending: false });
         if (error)
             throw error;
@@ -249,11 +258,20 @@ exports.getNotifications = getNotifications;
 const markNotificationRead = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
+        const { data: me, error: meError } = yield db_1.supabase
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+        if (meError || !(me === null || me === void 0 ? void 0 : me.profile_id)) {
+            res.status(404);
+            throw new Error('User profile not found');
+        }
         const { data, error } = yield db_1.supabase
             .from('notifications')
             .update({ read_status: true })
             .eq('id', id)
-            .eq('student_id', req.user.profile_id)
+            .eq('profile_id', me.profile_id)
             .select();
         if (error)
             throw error;

@@ -19,4 +19,7 @@ router.post('/grades', facultyController_1.uploadGrades);
 router.get('/grades/reports', facultyController_1.getFacultyGradeReports);
 router.post('/quizzes', facultyController_1.postQuiz);
 router.post('/leave', facultyController_1.applyLeave);
+router.get('/leave/my', facultyController_1.getMyLeaves);
+router.get('/notifications', facultyController_1.getFacultyNotifications);
+router.put('/notifications/:id/read', facultyController_1.markFacultyNotificationRead);
 exports.default = router;

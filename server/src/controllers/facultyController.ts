@@ -377,3 +377,57 @@ export const getEnrolledStudents = async (req: Request, res: Response, next: Nex
         next(error);
     }
 };
+
+export const getFacultyNotifications = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { data: me, error: meError } = await supabaseAdmin
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+
+        if (meError || !me?.profile_id) {
+            res.status(404);
+            throw new Error('Faculty profile not found');
+        }
+
+        const { data, error } = await supabaseAdmin
+            .from('notifications')
+            .select('*')
+            .eq('profile_id', me.profile_id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const markFacultyNotificationRead = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const { data: me, error: meError } = await supabaseAdmin
+            .from('users')
+            .select('profile_id')
+            .eq('id', req.user.id)
+            .single();
+
+        if (meError || !me?.profile_id) {
+            res.status(404);
+            throw new Error('Faculty profile not found');
+        }
+
+        const { data, error } = await supabaseAdmin
+            .from('notifications')
+            .update({ read_status: true })
+            .eq('id', id)
+            .eq('profile_id', me.profile_id)
+            .select();
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
