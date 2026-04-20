@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase, supabaseAdmin } from '../config/db';
 import type { Request as ExpressRequest } from 'express';
+import { sendEmail, emailTemplates } from '../services/emailService';
 
 type MulterRequest = ExpressRequest & { file?: Express.Multer.File };
 
@@ -45,6 +46,26 @@ export const uploadReceipt = async (req: MulterRequest, res: Response, next: Nex
       .single();
 
     if (dbError) { res.status(500); throw new Error(dbError.message); }
+
+    // Get student details and send confirmation email
+    try {
+      const { data: student } = await supabase
+        .from('students')
+        .select('name, email_id')
+        .eq('student_id', studentId)
+        .single();
+
+      if (student?.email_id) {
+        const emailContent = emailTemplates.feeReceiptSubmitted(
+          student.name,
+          fee_type === 'academic' ? 'Academic Fee' : 'Mess Fee',
+          'As per receipt'
+        );
+        await sendEmail({ to: student.email_id, ...emailContent });
+      }
+    } catch (emailError) {
+      console.error('Failed to send fee submission email:', emailError);
+    }
 
     res.status(201).json({ record, fileUrl: publicUrl, status: 'pending' });
   } catch (error) {
@@ -115,6 +136,26 @@ export const verifyReceipt = async (req: Request, res: Response, next: NextFunct
 
     if (error) throw error;
     if (!data) { res.status(404); throw new Error('Receipt not found'); }
+
+    // Send verification email to student
+    try {
+      const { data: student } = await supabase
+        .from('students')
+        .select('name, email_id')
+        .eq('student_id', data.student_id)
+        .single();
+
+      if (student?.email_id) {
+        const emailContent = emailTemplates.feeVerified(
+          student.name,
+          data.fee_type === 'academic' ? 'Academic Fee' : 'Mess Fee',
+          action as 'approved' | 'rejected'
+        );
+        await sendEmail({ to: student.email_id, ...emailContent });
+      }
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+    }
 
     res.status(200).json(data);
   } catch (error) {

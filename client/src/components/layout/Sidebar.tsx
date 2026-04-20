@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useStore } from '../../app/store';
-import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck, UserPlus, BookMarked, UserCheck, LogOut, Building2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, FileText, Calendar, CheckSquare, GraduationCap, ClipboardList, Award, Upload, BadgeCheck, UserPlus, BookMarked, UserCheck, LogOut, Building2, Brain, MessageSquare } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Sidebar: React.FC = () => {
@@ -26,6 +26,7 @@ export const Sidebar: React.FC = () => {
         { name: 'Reports', path: '/admin/reports', icon: ClipboardList },
         { name: 'Attendance View', path: '/admin/attendance', icon: CheckSquare },
         { name: 'Placements', path: '/admin/placements', icon: Building2 },
+        { name: 'Feedback', path: '/admin/feedback', icon: MessageSquare },
     ];
 
     const facultyLinks = [
@@ -48,6 +49,7 @@ export const Sidebar: React.FC = () => {
         { name: 'Exam Timetable', path: '/student/exam-timetable', icon: BookMarked },
         { name: 'Grades', path: '/student/grades', icon: GraduationCap },
         { name: 'Placements', path: '/student/placements', icon: Building2 },
+        { name: 'AI Review', path: '/student/ai-review', icon: Brain },
         { name: 'Feedback', path: '/student/feedback', icon: FileText },
         { name: 'Leaderboard', path: '/student/leaderboard', icon: Award },
     ];

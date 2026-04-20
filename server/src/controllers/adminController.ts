@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import { supabase, supabaseAdmin } from '../config/db';
+import { sendEmail, emailTemplates } from '../services/emailService';
 
 // Create Student (admin only)
 export const createStudent = async (req: Request, res: Response, next: NextFunction) => {
@@ -26,6 +27,14 @@ export const createStudent = async (req: Request, res: Response, next: NextFunct
         if (studentErr) throw studentErr;
 
         await supabaseAdmin.from('users').update({ profile_id: student_id }).eq('id', userRes.id);
+
+        // Send welcome email to student
+        try {
+            const emailContent = emailTemplates.newStudentCredentials(name, email, password, student_id);
+            await sendEmail({ to: email, ...emailContent });
+        } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+        }
 
         res.status(201).json({ message: 'Student created', student: studentRes });
     } catch (error) { next(error); }
@@ -55,6 +64,14 @@ export const createFaculty = async (req: Request, res: Response, next: NextFunct
         if (facultyErr) throw facultyErr;
 
         await supabaseAdmin.from('users').update({ profile_id: email }).eq('id', userRes.id);
+
+        // Send welcome email to faculty
+        try {
+            const emailContent = emailTemplates.newFacultyCredentials(name, email, password, department);
+            await sendEmail({ to: email, ...emailContent });
+        } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+        }
 
         res.status(201).json({ message: 'Faculty created', faculty: facultyRes });
     } catch (error) { next(error); }
@@ -324,6 +341,40 @@ export const approveGrades = async (req: Request, res: Response, next: NextFunct
             .in('id', gradeIds)
             .select();
 
+        // Send email notifications to students about published grades
+        try {
+            if (data && data.length > 0) {
+                const gradePromises = data.map(async (grade) => {
+                    const { data: student } = await supabaseAdmin
+                        .from('students')
+                        .select('name, email_id')
+                        .eq('student_id', grade.student_id)
+                        .single();
+
+                    const { data: course } = await supabaseAdmin
+                        .from('courses')
+                        .select('name')
+                        .eq('code', grade.course_id)
+                        .single();
+
+                    if (student?.email_id && course) {
+                        const emailContent = emailTemplates.gradePublished(
+                            student.name,
+                            course.name,
+                            `${grade.score} (${grade.exam_type})`,
+                            'Current'
+                        );
+                        return sendEmail({ to: student.email_id, ...emailContent });
+                    }
+                    return Promise.resolve();
+                });
+
+                await Promise.allSettled(gradePromises);
+            }
+        } catch (emailError) {
+            console.error('Failed to send grade publication emails:', emailError);
+        }
+
         res.status(200).json({ message: 'Grades published successfully', data });
     } catch (error) {
         next(error);
@@ -417,4 +468,67 @@ export const getAllAttendance = async (req: Request, res: Response, next: NextFu
     } catch (error) {
         next(error);
     }
+};
+
+// Get all feedback (admin only - anonymous, no student names)
+export const getFeedback = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { faculty_id, course_id, semester } = req.query;
+
+        let query = supabaseAdmin
+            .from('feedback')
+            .select('id, email_id, course_id, semester, rating, comments, created_at, courses(name), faculty(name)')
+            .order('created_at', { ascending: false });
+
+        if (faculty_id) query = query.eq('email_id', faculty_id as string);
+        if (course_id) query = query.eq('course_id', course_id as string);
+        if (semester) query = query.eq('semester', Number(semester));
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        // Group by faculty and compute averages - never expose student_id
+        const facultyMap: Record<string, {
+            facultyId: string; facultyName: string;
+            courses: Record<string, { courseName: string; ratings: number[]; comments: string[]; count: number }>
+        }> = {};
+
+        for (const f of data || []) {
+            const fid = f.email_id;
+            if (!facultyMap[fid]) {
+                facultyMap[fid] = {
+                    facultyId: fid,
+                    facultyName: (f.faculty as any)?.name || fid,
+                    courses: {}
+                };
+            }
+            const cid = f.course_id;
+            if (!facultyMap[fid].courses[cid]) {
+                facultyMap[fid].courses[cid] = {
+                    courseName: (f.courses as any)?.name || cid,
+                    ratings: [], comments: [], count: 0
+                };
+            }
+            facultyMap[fid].courses[cid].ratings.push(f.rating);
+            facultyMap[fid].courses[cid].count++;
+            if (f.comments) facultyMap[fid].courses[cid].comments.push(f.comments);
+        }
+
+        const result = Object.values(facultyMap).map(f => ({
+            facultyId: f.facultyId,
+            facultyName: f.facultyName,
+            courses: Object.entries(f.courses).map(([cid, c]) => ({
+                courseId: cid,
+                courseName: c.courseName,
+                totalResponses: c.count,
+                averageRating: +(c.ratings.reduce((a, b) => a + b, 0) / c.ratings.length).toFixed(2),
+                ratingDistribution: [1, 2, 3, 4, 5].map(r => ({
+                    rating: r, count: c.ratings.filter(x => x === r).length
+                })),
+                comments: c.comments // anonymous comments, no student info
+            }))
+        }));
+
+        res.status(200).json(result);
+    } catch (error) { next(error); }
 };

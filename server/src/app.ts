@@ -46,6 +46,22 @@ app.get('/', (req, res) => {
     res.send('Academic ERP API is running...');
 });
 
+// Email Test Route (remove in production)
+app.get('/api/test-email', async (req, res) => {
+    try {
+        const { sendEmail } = await import('./services/emailService');
+        const to = (req.query.to as string) || 'bms_2024026@iiitm.ac.in';
+        await sendEmail({
+            to,
+            subject: 'Server Email Test',
+            html: `<h2>✅ Server email is working!</h2><p>Sent at: ${new Date().toLocaleString()}</p>`
+        });
+        res.json({ success: true, message: `Email sent to ${to}` });
+    } catch (error: any) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Error Handler
 app.use(errorHandler);
 

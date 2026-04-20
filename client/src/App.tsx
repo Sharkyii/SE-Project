@@ -34,6 +34,10 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import PlacementManager from './pages/admin/PlacementManager';
 import PlacementOverview from './pages/faculty/PlacementOverview';
 import StudentPlacements from './pages/student/StudentPlacements';
+import AIReview from './pages/student/AIReview';
+import Leaderboard from './pages/student/Leaderboard';
+import Feedback from './pages/student/Feedback';
+import FeedbackReview from './pages/admin/FeedbackReview';
 
 import TestPage from './pages/TestPage';
 
@@ -93,6 +97,7 @@ function App() {
               <Route path="/admin/reports" element={<GradeApprovals />} />
               <Route path="/admin/attendance" element={<AdminAttendance />} />
               <Route path="/admin/placements" element={<PlacementManager />} />
+              <Route path="/admin/feedback" element={<FeedbackReview />} />
             </Route>
 
             {/* Faculty Routes */}
@@ -119,8 +124,9 @@ function App() {
               <Route path="/student/fees" element={<FeeManagement />} />
               <Route path="/student/attendance" element={<StudentAttendance />} />
               <Route path="/student/placements" element={<StudentPlacements />} />
-              <Route path="/student/feedback" element={<Placeholder title="Feedback" />} />
-              <Route path="/student/leaderboard" element={<Placeholder title="Leaderboard" />} />
+              <Route path="/student/ai-review" element={<AIReview />} />
+              <Route path="/student/feedback" element={<Feedback />} />
+              <Route path="/student/leaderboard" element={<Leaderboard />} />
             </Route>
           </Route>
         </Route>

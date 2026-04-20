@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { supabase } from '../config/db';
+import { sendEmail, emailTemplates } from '../services/emailService';
 
 const generateToken = (id: number, role: string, email: string) => {
     return jwt.sign({ id, role, email }, env.JWT_SECRET, {
@@ -44,6 +45,14 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
             if (studentError) throw studentError;
             await supabase.from('users').update({ profile_id: studentRes.id }).eq('id', userId);
+
+            // Send welcome email to student
+            try {
+                const emailContent = emailTemplates.newStudentCredentials(name, email, password, rollNumber);
+                await sendEmail({ to: email, ...emailContent });
+            } catch (emailError) {
+                console.error('Failed to send welcome email:', emailError);
+            }
         } else if (role === 'faculty') {
             const { department, designation } = profileData;
             const { data: facultyRes, error: facultyError } = await supabase
@@ -54,6 +63,14 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
             if (facultyError) throw facultyError;
             await supabase.from('users').update({ profile_id: facultyRes.id }).eq('id', userId);
+
+            // Send welcome email to faculty
+            try {
+                const emailContent = emailTemplates.newFacultyCredentials(name, email, password, department);
+                await sendEmail({ to: email, ...emailContent });
+            } catch (emailError) {
+                console.error('Failed to send welcome email:', emailError);
+            }
         }
 
         res.status(201).json({ message: 'User registered successfully' });

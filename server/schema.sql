@@ -191,11 +191,10 @@ CREATE TABLE IF NOT EXISTS quizzes (
 -- 13. Notifications Table (was 12)
 CREATE TABLE IF NOT EXISTS notifications (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    student_id TEXT NOT NULL,
+    profile_id TEXT NOT NULL,
     message TEXT NOT NULL,
     read_status BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 14. Faculty Leaves Table
@@ -254,4 +253,28 @@ CREATE TABLE IF NOT EXISTS exam_timetables (
     section      TEXT NOT NULL DEFAULT 'A',
     created_at   TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (course_id) REFERENCES courses(code) ON DELETE CASCADE
+);
+
+-- 15. Companies Table
+CREATE TABLE IF NOT EXISTS companies (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name TEXT NOT NULL,
+    description TEXT,
+    requirements TEXT,
+    arrival_date DATE,
+    package_details TEXT,
+    max_rounds INTEGER DEFAULT 5,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 16. Placement Selections Table
+CREATE TABLE IF NOT EXISTS placement_selections (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    company_id BIGINT NOT NULL,
+    student_id TEXT NOT NULL,
+    round_number INTEGER NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    UNIQUE (company_id, student_id, round_number)
 );

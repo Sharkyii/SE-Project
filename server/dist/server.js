@@ -18,14 +18,24 @@ const db_1 = require("./config/db");
 const env_1 = require("./config/env");
 dns_1.default.setDefaultResultOrder('verbatim');
 const PORT = env_1.env.PORT || 5000;
-// Connect to Database and start server
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log('Attempting to connect to database...');
         yield (0, db_1.connectDB)();
         console.log('Database connected successfully');
-        app_1.default.listen(PORT, () => {
+        const server = app_1.default.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
+        });
+        // Keep process alive
+        server.on('error', (err) => {
+            console.error('Server error:', err);
+        });
+        process.on('SIGINT', () => {
+            console.log('Shutting down...');
+            server.close(() => process.exit(0));
+        });
+        process.on('SIGTERM', () => {
+            server.close(() => process.exit(0));
         });
     }
     catch (error) {

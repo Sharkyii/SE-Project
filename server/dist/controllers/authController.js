@@ -28,6 +28,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const env_1 = require("../config/env");
 const db_1 = require("../config/db");
+const emailService_1 = require("../services/emailService");
 const generateToken = (id, role, email) => {
     return jsonwebtoken_1.default.sign({ id, role, email }, env_1.env.JWT_SECRET, {
         expiresIn: '30d',
@@ -62,6 +63,14 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             if (studentError)
                 throw studentError;
             yield db_1.supabase.from('users').update({ profile_id: studentRes.id }).eq('id', userId);
+            // Send welcome email to student
+            try {
+                const emailContent = emailService_1.emailTemplates.newStudentCredentials(name, email, password, rollNumber);
+                yield (0, emailService_1.sendEmail)(Object.assign({ to: email }, emailContent));
+            }
+            catch (emailError) {
+                console.error('Failed to send welcome email:', emailError);
+            }
         }
         else if (role === 'faculty') {
             const { department, designation } = profileData;
@@ -73,6 +82,14 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             if (facultyError)
                 throw facultyError;
             yield db_1.supabase.from('users').update({ profile_id: facultyRes.id }).eq('id', userId);
+            // Send welcome email to faculty
+            try {
+                const emailContent = emailService_1.emailTemplates.newFacultyCredentials(name, email, password, department);
+                yield (0, emailService_1.sendEmail)(Object.assign({ to: email }, emailContent));
+            }
+            catch (emailError) {
+                console.error('Failed to send welcome email:', emailError);
+            }
         }
         res.status(201).json({ message: 'User registered successfully' });
     }

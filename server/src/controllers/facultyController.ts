@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase, supabaseAdmin } from '../config/db';
+import { sendEmail, emailTemplates } from '../services/emailService';
 
 // Mark Attendance (Bulk)
 export const markAttendance = async (req: Request, res: Response, next: NextFunction) => {
@@ -71,7 +72,7 @@ export const uploadGrades = async (req: Request, res: Response, next: NextFuncti
         // Verify that the currently logged-in faculty is assigned to teach this course
         const { data: course, error: courseError } = await supabaseAdmin
             .from('courses')
-            .select('email_id')
+            .select('email_id, name')
             .eq('code', courseId)
             .single();
 
@@ -88,7 +89,7 @@ export const uploadGrades = async (req: Request, res: Response, next: NextFuncti
         // Find student ID using email
         const { data: student, error: studentError } = await supabaseAdmin
             .from('students')
-            .select('student_id')
+            .select('student_id, name, email_id')
             .eq('email_id', studentEmail)
             .single();
             
@@ -104,6 +105,23 @@ export const uploadGrades = async (req: Request, res: Response, next: NextFuncti
             .single();
 
         if (error) throw error;
+
+        // Send email notification to student (when grade is approved, not pending)
+        // Note: You might want to send this when admin approves the grade instead
+        try {
+            if (student.email_id) {
+                const emailContent = emailTemplates.gradePublished(
+                    student.name,
+                    course.name,
+                    `${score} (${examType})`,
+                    'Current'
+                );
+                await sendEmail({ to: student.email_id, ...emailContent });
+            }
+        } catch (emailError) {
+            console.error('Failed to send grade notification email:', emailError);
+        }
+
         res.status(201).json(data);
     } catch (error) {
         next(error);
@@ -132,9 +150,22 @@ export const postQuiz = async (req: Request, res: Response, next: NextFunction) 
             
         if (enrollError) throw enrollError;
 
+        // Get course and faculty details
+        const { data: course } = await supabaseAdmin
+            .from('courses')
+            .select('name')
+            .eq('code', courseId)
+            .single();
+
+        const { data: faculty } = await supabaseAdmin
+            .from('faculty')
+            .select('name')
+            .eq('email_id', facultyId)
+            .single();
+
         if (enrollments && enrollments.length > 0) {
             const notifications = enrollments.map(e => ({
-                student_id: e.student_id,
+                profile_id: e.student_id,
                 message: `New quiz posted for ${courseId}: ${title}. Due on ${dueDate}`
             }));
             
@@ -143,6 +174,35 @@ export const postQuiz = async (req: Request, res: Response, next: NextFunction) 
                 .insert(notifications);
                 
             if (notifError) console.error("Error sending notifications", notifError);
+
+            // Send emails to all enrolled students
+            try {
+                const studentIds = enrollments.map(e => e.student_id);
+                const { data: students } = await supabaseAdmin
+                    .from('students')
+                    .select('name, email_id')
+                    .in('student_id', studentIds);
+
+                if (students) {
+                    const emailPromises = students.map(student => {
+                        if (student.email_id) {
+                            const emailContent = emailTemplates.quizAssignment(
+                                student.name,
+                                course?.name || courseId,
+                                title,
+                                new Date(dueDate).toLocaleDateString(),
+                                faculty?.name || 'Faculty'
+                            );
+                            return sendEmail({ to: student.email_id, ...emailContent });
+                        }
+                        return Promise.resolve();
+                    });
+
+                    await Promise.allSettled(emailPromises);
+                }
+            } catch (emailError) {
+                console.error('Failed to send quiz notification emails:', emailError);
+            }
         }
 
         res.status(201).json({ message: 'Quiz posted successfully', quiz: quizData });
@@ -182,7 +242,7 @@ export const applyLeave = async (req: Request, res: Response, next: NextFunction
         // 2. Fetch all students enrolled in this faculty's courses
         const { data: myCourses, error: coursesError } = await supabaseAdmin
             .from('courses')
-            .select('code')
+            .select('code, name')
             .eq('email_id', facultyEmail);
 
         if (coursesError) console.error('Error fetching faculty courses:', coursesError);
@@ -215,13 +275,41 @@ export const applyLeave = async (req: Request, res: Response, next: NextFunction
                 const facultyName = facultyProfile?.name || 'A faculty member';
                 
                 const notifications = studentIds.map(sid => ({
-                    student_id: sid,
+                    profile_id: sid,
                     message: `Important: ${facultyName} is on leave from ${startDate} to ${endDate}. Reason: ${reason}`
                 }));
 
                 const { error: notifError } = await supabaseAdmin.from('notifications').insert(notifications);
                 if (notifError) console.error('Error inserting notifications:', notifError);
                 else console.log(`Notified ${studentIds.length} students about leave.`);
+
+                // Send emails to all affected students
+                try {
+                    const { data: students } = await supabaseAdmin
+                        .from('students')
+                        .select('name, email_id')
+                        .in('student_id', studentIds);
+
+                    if (students) {
+                        const emailPromises = students.map(student => {
+                            if (student.email_id && myCourses.length > 0) {
+                                const emailContent = emailTemplates.classCancelled(
+                                    student.name,
+                                    myCourses.map(c => c.name).join(', '),
+                                    new Date(startDate).toLocaleDateString(),
+                                    `${startDate} to ${endDate}`,
+                                    reason
+                                );
+                                return sendEmail({ to: student.email_id, ...emailContent });
+                            }
+                            return Promise.resolve();
+                        });
+
+                        await Promise.allSettled(emailPromises);
+                    }
+                } catch (emailError) {
+                    console.error('Failed to send leave notification emails:', emailError);
+                }
             }
         }
 

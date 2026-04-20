@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "nodemon src/server.ts",
+    "dev": "node dist/server.js",
     "build": "tsc"
   },
   "devDependencies": {
@@ -20,6 +20,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.93.3",
     "@types/dotenv": "^6.1.1",
+    "@types/nodemailer": "^8.0.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -29,6 +30,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
-    "multer": "^2.1.1"
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.5"
   }
 }

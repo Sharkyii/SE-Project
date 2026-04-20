@@ -27,4 +27,5 @@ router.get('/electives/summary', adminController_1.getElectiveSummary);
 router.get('/grades/pending', adminController_1.getPendingGrades);
 router.post('/grades/approve', adminController_1.approveGrades);
 router.get('/attendance', adminController_1.getAllAttendance);
+router.get('/feedback', adminController_1.getFeedback);
 exports.default = router;
