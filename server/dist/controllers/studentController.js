@@ -142,10 +142,19 @@ const getElectiveCourses = (req, res, next) => __awaiter(void 0, void 0, void 0,
 exports.getElectiveCourses = getElectiveCourses;
 const viewGrades = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { data: student } = yield db_1.supabase
+            .from('students')
+            .select('student_id')
+            .eq('email_id', req.user.email)
+            .single();
+        if (!student) {
+            res.status(404);
+            throw new Error('Student profile not found');
+        }
         const { data, error } = yield db_1.supabase
             .from('grades')
             .select('*, courses(name)')
-            .eq('student_id', req.user.profile_id)
+            .eq('student_id', student.student_id)
             .eq('status', 'published');
         if (error)
             throw error;

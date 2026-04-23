@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../../app/store';
-import { BookOpen, Calendar, Award, DollarSign, Users, TrendingUp } from 'lucide-react';
-import axios from 'axios';
+import { BookOpen, Calendar, Award, DollarSign, Users, TrendingUp, AlertCircle } from 'lucide-react';
+import api from '../../services/api';
 
 export const StudentDashboard: React.FC = () => {
   const { user } = useStore();
@@ -31,20 +31,44 @@ export const StudentDashboard: React.FC = () => {
   };
 
   const fetchDashboardData = async () => {
+    let newStats = {
+      enrolledCourses: 0,
+      attendance: 0,
+      cgpa: 0,
+      pendingFees: 0,
+    };
+
     try {
-      // Fetch enrolled courses
-      const enrollmentRes = await api.get('/enrollments/student');
-      
-      setStats(prev => ({
-        ...prev,
-        enrolledCourses: enrollmentRes.data?.enrollments?.length || 0,
-        attendance: 85,
-        cgpa: 8.5,
-        pendingFees: 0,
-      }));
+      // Fetch enrolled courses (note: backend endpoint might not exist, handled gracefully)
+      const enrollmentRes = await api.get('/student/enrollments').catch(() => ({ data: { enrollments: [] } }));
+      newStats.enrolledCourses = enrollmentRes.data?.enrollments?.length || enrollmentRes.data?.length || 0;
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Error fetching enrollments:', error);
     }
+
+    try {
+      // Fetch grades to calculate CGPA from final grades
+      const gradesRes = await api.get('/student/grades');
+      const gradesData = gradesRes.data || [];
+      const finalGrades = gradesData.filter((g: any) => g.exam_type === 'final');
+      const totalFinalScore = finalGrades.reduce((sum: number, g: any) => sum + g.score, 0);
+      newStats.cgpa = finalGrades.length > 0 ? (totalFinalScore / finalGrades.length) / 10 : 0;
+    } catch (error) {
+      console.error('Error fetching grades:', error);
+    }
+
+    try {
+      // Fetch attendance
+      const attendanceRes = await api.get('/student/attendance');
+      const attendanceData = attendanceRes.data || [];
+      const presentDays = attendanceData.filter((a: any) => a.status === 'present').length;
+      const totalDays = attendanceData.length;
+      newStats.attendance = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    }
+
+    setStats(newStats);
   };
 
   return (
