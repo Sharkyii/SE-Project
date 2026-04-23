@@ -1,0 +1,73 @@
+﻿git : remote: error: GH013: Repository rule violations found for 
+refs/heads/feature/dark-mode-chatbot-comprehensive-data.        
+At line:1 char:1
++ git push sharkyii feature/dark-mode-chatbot-comprehensive-data > push ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (remote: error: ...e-data.        :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓ
+ÇöΓÇöΓÇöΓÇöΓÇö        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/wor
+king-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       ΓÇöΓÇö Groq API Key 
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö     
+   
+remote:        locations:        
+remote:          - commit: ba8cd83a4b3e12cf096dddd02aeeae39f178984f        
+remote:            path: GROQ_CHATBOT_SETUP.md:14        
+remote:          - commit: ba8cd83a4b3e12cf096dddd02aeeae39f178984f        
+remote:            path: server/.env:8        
+remote:          - commit: 25b52c72bab5470a8fc2fdee377d7e189fa772ed        
+remote:            path: server/.env:8        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        
+https://github.com/Sharkyii/SE-Project/security/secret-scanning/unblock-secret/3CltfYR9LpHlHIteqMnKcllQra2        
+remote:             
+remote:             
+remote:       ΓÇöΓÇö Sendinblue SMTP Key 
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö        
+remote:        locations:        
+remote:          - commit: 25b52c72bab5470a8fc2fdee377d7e189fa772ed        
+remote:            path: server/.env:14        
+remote:          - commit: 25b52c72bab5470a8fc2fdee377d7e189fa772ed        
+remote:            path: server/src/services/emailService.ts:21        
+remote:          - commit: 25b52c72bab5470a8fc2fdee377d7e189fa772ed        
+remote:            path: server/test_email_simple.js:13        
+remote:          - commit: 25b52c72bab5470a8fc2fdee377d7e189fa772ed        
+remote:            path: server/test_final.js:10        
+remote:          - commit: 25b52c72bab5470a8fc2fdee377d7e189fa772ed        
+remote:            path: server/test_with_your_email.js:10        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        
+https://github.com/Sharkyii/SE-Project/security/secret-scanning/unblock-secret/3CltfVtImbESoggftuUrmQiuoST        
+remote:             
+remote:             
+remote:       ΓÇöΓÇö Sendinblue API Key 
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö        
+remote:        locations:        
+remote:          - commit: 25b52c72bab5470a8fc2fdee377d7e189fa772ed        
+remote:            path: server/.env:15        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        
+https://github.com/Sharkyii/SE-Project/security/secret-scanning/unblock-secret/3CltfSqnrHiKd9laY6ShuItoUiv        
+remote:             
+remote: 
+remote: 
+To https://github.com/Sharkyii/SE-Project.git
+ ! [remote rejected] feature/dark-mode-chatbot-comprehensive-data -> feature/dark-mode-chatbot-comprehensive-data 
+(push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/Sharkyii/SE-Project.git'
